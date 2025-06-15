@@ -26,7 +26,7 @@ jobs:
         run: chmod +x gradlew
         
       - name: Run KMP Common Tests
-        run: ./gradlew :composeApp:allIosX64Test
+        run: ./gradlew :composeApp:iosX64Test
         
       - name: Set Default Scheme
         run: |
