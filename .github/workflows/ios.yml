@@ -28,32 +28,17 @@ jobs:
       - name: Run KMP Common Tests
         run: ./gradlew :composeApp:iosX64Test
         
-      - name: Install CocoaPods
+      - name: Build iOS App for Simulator
         run: |
-          cd iosApp
-          sudo gem install cocoapods
-          pod install
-        
+          # Build the iOS app for simulator
+          ./gradlew :composeApp:iosX64Binaries
+          
       - name: Run iOS Tests
-        working-directory: ./iosApp
         run: |
-          # Get the first available simulator
-          SIMULATOR_DEVICE=$(xcrun xctrace list devices 2>&1 | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}' | sed -e "s/ Simulator$//")
+          # Run common tests for iOS
+          ./gradlew :composeApp:iosX64Test
           
-          # Run tests
-          xcodebuild test \
-            -workspace iosApp.xcworkspace \
-            -scheme iosApp \
-            -destination "platform=iOS Simulator,name=$SIMULATOR_DEVICE"
-          
-      - name: Build iOS App
-        working-directory: ./iosApp
+      - name: Create XCFramework
         run: |
-          # Get the first available simulator
-          SIMULATOR_DEVICE=$(xcrun xctrace list devices 2>&1 | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}' | sed -e "s/ Simulator$//")
-          
-          # Build the app
-          xcodebuild build \
-            -workspace iosApp.xcworkspace \
-            -scheme iosApp \
-            -destination "platform=iOS Simulator,name=$SIMULATOR_DEVICE"
+          # Create XCFramework for distribution
+          ./gradlew :composeApp:createXCFramework
