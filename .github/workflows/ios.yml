@@ -25,20 +25,26 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         
-      - name: Run KMP Common Tests
-        run: ./gradlew :composeApp:iosX64Test
-        
-      - name: Build iOS App for Simulator
-        run: |
-          # Build the iOS app for simulator
-          ./gradlew :composeApp:iosX64Binaries
-          
       - name: Run iOS Tests
         run: |
-          # Run common tests for iOS
+          # Run tests for iOS simulator (x86_64)
           ./gradlew :composeApp:iosX64Test
           
-      - name: Create XCFramework
+          # Run tests for iOS device (arm64)
+          ./gradlew :composeApp:iosSimulatorArm64Test
+        
+      - name: Build Debug Framework
         run: |
-          # Create XCFramework for distribution
-          ./gradlew :composeApp:createXCFramework
+          # Build debug framework for iOS simulator (x86_64)
+          ./gradlew :composeApp:linkDebugFrameworkIosX64
+          
+          # Build debug framework for iOS simulator (arm64)
+          ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
+          
+      - name: Build Release Framework
+        run: |
+          # Build release framework for iOS simulator (x86_64)
+          ./gradlew :composeApp:linkReleaseFrameworkIosX64
+          
+          # Build release framework for iOS simulator (arm64)
+          ./gradlew :composeApp:linkReleaseFrameworkIosSimulatorArm64
