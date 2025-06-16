@@ -1,0 +1,44 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+  # Lanes para pruebas
+  desc "Run all tests"
+  lane :test do
+    # Ejecutar pruebas de KMM
+    sh("cd ../../ && ./gradlew :composeApp:iosX64Test :composeApp:iosSimulatorArm64Test")
+  end
+
+  # Lanes para construir el framework
+  desc "Build debug frameworks"
+  lane :build_debug_frameworks do
+    sh("cd ../../ && ./gradlew :composeApp:linkDebugFrameworkIosX64 :composeApp:linkDebugFrameworkIosSimulatorArm64")
+  end
+
+  desc "Build release frameworks"
+  lane :build_release_frameworks do
+    sh("cd ../../ && ./gradlew :composeApp:linkReleaseFrameworkIosX64 :composeApp:linkReleaseFrameworkIosSimulatorArm64")
+  end
+
+  # Lanes para CI/CD
+  desc "Run CI pipeline"
+  lane :ci do
+    # Verificar que estamos en CI
+    unless ENV["CI"]
+      UI.important("Not running in CI environment")
+      next
+    end
+    
+    # Ejecutar pruebas
+    test
+    
+    # Construir frameworks
+    build_debug_frameworks
+    build_release_frameworks
+  end
+end

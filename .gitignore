@@ -16,3 +16,10 @@ captures
 !*.xcodeproj/project.xcworkspace/
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
+
+# Fastlane
+iosApp/fastlane/report.xml
+iosApp/fastlane/Preview.html
+iosApp/fastlane/screenshots
+iosApp/fastlane/test_output
+iosApp/fastlane/README.md

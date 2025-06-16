@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ "master" ]
 
+# Permisos necesarios para el token de GitHub
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   test-and-build:
     name: Test and Build iOS
@@ -22,29 +27,39 @@ jobs:
           distribution: 'temurin'
           cache: gradle
           
+      # Configurar Ruby y Fastlane
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.2'  # Ajusta según sea necesario
+          bundler-cache: true
+          
+      - name: Install Bundler
+        run: gem install bundler
+        
+      - name: Install Fastlane
+        run: |
+          cd iosApp
+          bundle install --path vendor/bundle
+          
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         
-      - name: Run iOS Tests
+      - name: Run Fastlane CI
         run: |
-          # Run tests for iOS simulator (x86_64)
-          ./gradlew :composeApp:iosX64Test
+          cd iosApp
+          bundle exec fastlane ci
+        env:
+          CI: true
           
-          # Run tests for iOS device (arm64)
-          ./gradlew :composeApp:iosSimulatorArm64Test
-        
-      - name: Build Debug Framework
-        run: |
-          # Build debug framework for iOS simulator (x86_64)
-          ./gradlew :composeApp:linkDebugFrameworkIosX64
-          
-          # Build debug framework for iOS simulator (arm64)
-          ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
-          
-      - name: Build Release Framework
-        run: |
-          # Build release framework for iOS simulator (x86_64)
-          ./gradlew :composeApp:linkReleaseFrameworkIosX64
-          
-          # Build release framework for iOS simulator (arm64)
-          ./gradlew :composeApp:linkReleaseFrameworkIosSimulatorArm64
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-frameworks
+          path: |
+            composeApp/build/bin/iosX64/debugFramework/
+            composeApp/build/bin/iosSimulatorArm64/debugFramework/
+            composeApp/build/bin/iosX64/releaseFramework/
+            composeApp/build/bin/iosSimulatorArm64/releaseFramework/
+          retention-days: 5
