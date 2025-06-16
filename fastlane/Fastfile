@@ -1,0 +1,81 @@
+default_platform(:android)
+
+platform :android do
+  desc "Run all KMP common tests"
+  lane :test_kmp do
+    sh("cd .. && ./gradlew :composeApp:allTests")
+  end
+
+  desc "Run Android unit tests"
+  lane :test_android do
+    sh("cd .. && ./gradlew :composeApp:testDebugUnitTest")
+  end
+
+  desc "Run all tests (KMP + Android)"
+  lane :test do
+    test_kmp
+    test_android
+  end
+
+  desc "Build debug APK"
+  lane :build_debug do
+    sh("cd .. && ./gradlew :composeApp:assembleDebug")
+  end
+
+  desc "Build release APK"
+  lane :build_release do
+    sh("cd .. && ./gradlew :composeApp:assembleRelease")
+  end
+
+  desc "Run CI pipeline"
+  lane :ci do
+    unless ENV["CI"]
+      UI.important("Not running in CI environment")
+      next
+    end
+    
+    test
+    
+    build_debug
+  end
+
+  desc "Build and deploy a new version to Google Play Internal Testing"
+  desc "This will build a release AAB and upload it to Google Play Internal Testing"
+  lane :internal do |options|
+    unless ENV["CI"] || ENV["FORCE_DEPLOY"]
+      UI.important("This lane is meant to be run in CI environment")
+      UI.important("Set FORCE_DEPLOY=true to run outside CI")
+      next
+    end
+
+    sh("cd .. && ./gradlew :composeApp:bundleRelease")
+    
+    track = ENV["TRACK"] || 'internal'
+    package_name = options[:package_name] || package_name()
+    
+    aab_path = Dir["**/composeApp/build/outputs/bundle/release/*.aab"].first
+    
+    if aab_path.nil? || !File.exist?(aab_path)
+      UI.error("No se encontró el archivo AAB. Asegúrate de que la compilación fue exitosa.")
+      next
+    end
+    
+    UI.message("Subiendo #{aab_path} a Google Play (#{track})...")
+    
+    upload_to_play_store(
+      package_name: package_name,
+      aab: aab_path,
+      track: track,
+      release_status: 'draft',
+      skip_upload_apk: true,
+      skip_upload_aab: false,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      json_key_data: ENV["GCLOUD_SERVICE_ACCOUNT_JSON"]
+    )
+    
+    UI.success("✅ Aplicación subida exitosamente a Google Play (#{track} track)!")
+  end
+end
