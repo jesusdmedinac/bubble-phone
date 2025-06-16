@@ -51,7 +51,7 @@ platform :android do
     sh("cd .. && ./gradlew :composeApp:bundleRelease")
     
     track = ENV["TRACK"] || 'internal'
-    package_name = options[:package_name] || package_name()
+    package_name = options[:package_name] || CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
     
     aab_path = Dir["**/composeApp/build/outputs/bundle/release/*.aab"].first
     
