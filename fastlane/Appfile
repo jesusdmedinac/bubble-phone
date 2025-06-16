@@ -1,2 +1,2 @@
-echo 'json_key_file("") # Ruta a tu archivo de credenciales de Google Play si lo necesitas
-package_name("com.tu.paquete") # Reemplaza con tu package name' > fastlane/Appfile
+json_key_file("play-store-credentials.json")
+package_name("com.jesusdmedinac.bubble.phone")
