@@ -18,6 +18,13 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 
 # Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/README.md
+
+# iosApp
 iosApp/fastlane/report.xml
 iosApp/fastlane/Preview.html
 iosApp/fastlane/screenshots

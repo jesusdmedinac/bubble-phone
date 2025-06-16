@@ -3,12 +3,12 @@ default_platform(:android)
 platform :android do
   desc "Run all KMP common tests"
   lane :test_kmp do
-    sh("./gradlew :composeApp:allTests")
+    sh("cd .. && ./gradlew :composeApp:allTests")
   end
 
   desc "Run Android unit tests"
   lane :test_android do
-    sh("./gradlew :composeApp:testDebugUnitTest")
+    sh("cd .. && ./gradlew :composeApp:testDebugUnitTest")
   end
 
   desc "Run all tests (KMP + Android)"
@@ -19,12 +19,12 @@ platform :android do
 
   desc "Build debug APK"
   lane :build_debug do
-    sh("./gradlew :composeApp:assembleDebug")
+    sh("cd .. && ./gradlew :composeApp:assembleDebug")
   end
 
   desc "Build release APK"
   lane :build_release do
-    sh("./gradlew :composeApp:assembleRelease")
+    sh("cd .. && ./gradlew :composeApp:assembleRelease")
   end
 
   desc "Run CI pipeline"
