@@ -7,14 +7,11 @@
 default_platform(:ios)
 
 platform :ios do
-  # Lanes para pruebas
   desc "Run all tests"
   lane :test do
-    # Ejecutar pruebas de KMM
     sh("cd ../../ && ./gradlew :composeApp:iosX64Test :composeApp:iosSimulatorArm64Test")
   end
 
-  # Lanes para construir el framework
   desc "Build debug frameworks"
   lane :build_debug_frameworks do
     sh("cd ../../ && ./gradlew :composeApp:linkDebugFrameworkIosX64 :composeApp:linkDebugFrameworkIosSimulatorArm64")
@@ -25,19 +22,15 @@ platform :ios do
     sh("cd ../../ && ./gradlew :composeApp:linkReleaseFrameworkIosX64 :composeApp:linkReleaseFrameworkIosSimulatorArm64")
   end
 
-  # Lanes para CI/CD
   desc "Run CI pipeline"
   lane :ci do
-    # Verificar que estamos en CI
     unless ENV["CI"]
       UI.important("Not running in CI environment")
       next
     end
     
-    # Ejecutar pruebas
     test
     
-    # Construir frameworks
     build_debug_frameworks
     build_release_frameworks
   end

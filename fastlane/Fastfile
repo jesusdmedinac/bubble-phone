@@ -1,0 +1,41 @@
+default_platform(:android)
+
+platform :android do
+  desc "Run all KMP common tests"
+  lane :test_kmp do
+    sh("./gradlew :composeApp:allTests")
+  end
+
+  desc "Run Android unit tests"
+  lane :test_android do
+    sh("./gradlew :composeApp:testDebugUnitTest")
+  end
+
+  desc "Run all tests (KMP + Android)"
+  lane :test do
+    test_kmp
+    test_android
+  end
+
+  desc "Build debug APK"
+  lane :build_debug do
+    sh("./gradlew :composeApp:assembleDebug")
+  end
+
+  desc "Build release APK"
+  lane :build_release do
+    sh("./gradlew :composeApp:assembleRelease")
+  end
+
+  desc "Run CI pipeline"
+  lane :ci do
+    unless ENV["CI"]
+      UI.important("Not running in CI environment")
+      next
+    end
+    
+    test
+    
+    build_debug
+  end
+end

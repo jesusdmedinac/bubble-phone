@@ -2,9 +2,9 @@ name: Android CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "dev" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "dev" ]
 
 jobs:
   test-and-build:
@@ -21,14 +21,23 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-      
-    - name: Run KMP Common Tests
-      run: ./gradlew :composeApp:allTests
-      
-    - name: Run Android Tests
-      run: ./gradlew :composeApp:testDebugUnitTest
-      
-    - name: Build Android App
-      run: ./gradlew :composeApp:assembleDebug
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2.2'
+        bundler-cache: true
+
+    - name: Install Bundler
+      run: gem install bundler
+
+    - name: Install dependencies
+      run: |
+        cd $GITHUB_WORKSPACE
+        bundle install
+
+    - name: Run Fastlane CI
+      run: bundle exec fastlane ci
+      env:
+        JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        LC_ALL: en_US.UTF-8
+        LANG: en_US.UTF-8
