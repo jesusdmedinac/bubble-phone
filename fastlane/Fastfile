@@ -57,18 +57,8 @@ platform :android do
     aab_path = "composeApp/build/outputs/bundle/release/composeApp-release.aab"
     
     UI.message("Uploading #{aab_path} to Google Play (#{track})...")
-    
-    credentials_path = "../play-store-credentials.json"
-    
-    unless File.exist?(credentials_path)
-      UI.error("❌ play-store-credentials.json not found")
-      UI.error("Current directory: #{Dir.pwd}")
-      UI.error("Directory contents: #{Dir.glob('*').join(', ')}")
-      next
-    end
 
-    UI.message("📄 play-store-credentials.json contents:")
-    UI.message(File.read(credentials_path))
+    credentials_path = test_play_store_credentials
 
     upload_to_play_store(
       package_name: package_name,
@@ -87,5 +77,17 @@ platform :android do
     )
     
     UI.success("✅ App uploaded successfully to Google Play (#{track} track)")
+  end
+
+  # Lane to test play-store-credentials.json content
+  lane :test_play_store_credentials do
+    credentials_path = "../play-store-credentials.json"
+    
+    unless File.exist?(credentials_path)
+      UI.error("❌ play-store-credentials.json not found")
+      next
+    end
+
+    return credentials_path
   end
 end
