@@ -143,6 +143,8 @@ platform :android do
     )
     
     UI.success("✅ Version changes committed")
+
+    current_git_branch = git_branch
     
     begin
       push_to_git_remote(
