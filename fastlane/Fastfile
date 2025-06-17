@@ -81,13 +81,17 @@ platform :android do
 
   # Lane to test play-store-credentials.json content
   lane :test_play_store_credentials do
-    credentials_path = "../play-store-credentials.json"
+    # Buscar el archivo en la raíz del proyecto
+    credentials_path = File.expand_path("../play-store-credentials.json", __dir__)
     
     unless File.exist?(credentials_path)
-      UI.error("❌ play-store-credentials.json not found")
+      UI.error("❌ play-store-credentials.json not found at: #{credentials_path}")
+      UI.error("Current directory: #{Dir.pwd}")
+      UI.error("Directory contents: #{Dir.glob('*').join(', ')}")
       next
     end
 
+    UI.message("✅ Found credentials at: #{credentials_path}")
     credentials_path
   end
 end
