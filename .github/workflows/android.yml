@@ -143,13 +143,13 @@ jobs:
       - name: Get version info
         id: version_info
         run: |
-          # Lee los valores del archivo de versión de Fastlane
-          VERSION_NAME=$(grep "version_name" version.properties | cut -d'=' -f2)
-          VERSION_CODE=$(grep "version_code" version.properties | cut -d'=' -f2)
-          
+          VERSION_MAJOR=$(grep "VERSION_MAJOR" version.properties | cut -d'=' -f2)
+          VERSION_MINOR=$(grep "VERSION_MINOR" version.properties | cut -d'=' -f2)
+          VERSION_PATCH=$(grep "VERSION_PATCH" version.properties | cut -d'=' -f2)
+          VERSION_NAME="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+          VERSION_CODE=$VERSION_PATCH
           echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
-          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
-          
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT          
           echo "Version Name: $VERSION_NAME"
           echo "Version Code: $VERSION_CODE"
 
