@@ -18,12 +18,13 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 
 # Fastlane
+.env
 fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 fastlane/README.md
-fastlane/play-store-credentials.json
+play-store-credentials.json
 
 # iosApp
 iosApp/fastlane/report.xml

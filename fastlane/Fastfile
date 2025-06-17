@@ -55,14 +55,7 @@ platform :android do
     package_name = options[:package_name] || CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
     
     # Buscar en las rutas posibles del archivo AAB
-    aab_path = Dir[
-      "**/composeApp/build/outputs/bundle/release/*.aab",
-    ].find { |path| File.exist?(path) }
-    
-    if aab_path.nil? || !File.exist?(aab_path)
-      UI.error("No se encontró el archivo AAB. Asegúrate de que la compilación fue exitosa.")
-      next
-    end
+    aab_path = "composeApp/build/outputs/bundle/release/composeApp-release.aab"
     
     UI.message("Subiendo #{aab_path} a Google Play (#{track})...")
     
