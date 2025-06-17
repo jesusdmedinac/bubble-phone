@@ -123,13 +123,13 @@ platform :android do
     version_name = "#{version_data[:version_major]}.#{version_data[:version_minor]}.#{version_data[:version_patch]}"
     version_code = version_data[:version_code]
 
-    sh("git add version.properties")
-    sh("git commit -m 'Bump version to #{version_name} (#{version_code})'")
+    sh("cd .. && git add version.properties")
+    sh("cd .. && git commit -m 'Bump version to #{version_name} (#{version_code})'")
     UI.success("✅ Version changes committed")
 
     # Dev branch only for test purposes.
     # TODO: Change it to master
-    sh("git push origin HEAD:dev")
+    sh("cd .. && git push origin HEAD:dev")
     UI.success("✅ Version changes pushed to dev branch")
   end
 
