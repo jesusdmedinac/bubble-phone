@@ -203,4 +203,14 @@ platform :android do
 
     UI.success("✅ Version bumped to #{version_data[:version_major]}.#{version_data[:version_minor]}.#{patch} (#{version_code})")
   end
+
+  desc "Configure git"
+  lane :setup_git do |options|
+    UI.message("Configuring git...")
+    
+    sh("git config --global user.name '#{options[:username]}'")
+    sh("git config --global user.email '#{options[:email]}'")
+    
+    UI.success("✅ Git configured")
+  end
 end
