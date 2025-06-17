@@ -88,6 +88,6 @@ platform :android do
       next
     end
 
-    return credentials_path
+    credentials_path
   end
 end
