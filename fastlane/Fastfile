@@ -58,10 +58,18 @@ platform :android do
     
     UI.message("Subiendo #{aab_path} a Google Play (#{track})...")
     
-    unless !File.exist?("play-store-credentials.json")
-      UI.error("❌ No se encontró el archivo play-store-credentials.json")
+    credentials_path = "play-store-credentials.json"
+    
+    unless File.exist?(credentials_path)
+      UI.error("❌ No se encontró el archivo de credenciales en: #{File.expand_path(credentials_path)}")
+      UI.error("Directorio actual: #{Dir.pwd}")
+      UI.error("Contenido del directorio: #{Dir.glob('*').join(', ')}")
       next
     end
+
+    # Mostrar información de depuración
+    UI.message("📄 Contenido de las credenciales:")
+    UI.message(File.read(credentials_path))
 
     upload_to_play_store(
       package_name: package_name,
@@ -74,6 +82,9 @@ platform :android do
       skip_upload_changelogs: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
+      json_key: credentials_path,
+      validate_only: false,
+      timeout: 300
     )
     
     UI.success("✅ Aplicación subida exitosamente a Google Play (#{track} track)!")
