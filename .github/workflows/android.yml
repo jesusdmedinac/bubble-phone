@@ -54,6 +54,10 @@ jobs:
         
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      - name: Generate bubble-phone-keystore.jks
+        run: |
+          echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
           
       - name: Run Fastlane CI
         run: bundle exec fastlane ci
