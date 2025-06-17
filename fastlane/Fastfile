@@ -54,11 +54,15 @@ platform :android do
     track = ENV["TRACK"] || 'internal'
     package_name = options[:package_name] || CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
     
-    # Buscar en las rutas posibles del archivo AAB
     aab_path = "composeApp/build/outputs/bundle/release/composeApp-release.aab"
     
     UI.message("Subiendo #{aab_path} a Google Play (#{track})...")
     
+    unless !File.exist?("play-store-credentials.json")
+      UI.error("❌ No se encontró el archivo play-store-credentials.json")
+      next
+    end
+
     upload_to_play_store(
       package_name: package_name,
       aab: aab_path,
@@ -70,7 +74,6 @@ platform :android do
       skip_upload_changelogs: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
-      json_key_data: ENV["GCLOUD_SERVICE_ACCOUNT_JSON"]
     )
     
     UI.success("✅ Aplicación subida exitosamente a Google Play (#{track} track)!")
