@@ -35,22 +35,24 @@ platform :android do
   lane :ci do
     unless ENV["CI"]
       UI.important("Not running in CI environment")
-      next
+      UI.user_error!("This lane should only be run in a CI environment")
     end
     
-    test
-    
-    build_debug
-    build_release
+    begin
+      test
+      build_debug
+      build_release
+    rescue => e
+      UI.error("❌ CI pipeline failed: #{e.message}")
+      raise e
+    end
   end
 
   desc "Build and deploy a new version to Google Play Internal Testing"
   desc "This will build a release AAB and upload it to Google Play Internal Testing"
   lane :internal do |options|
     unless ENV["CI"] || ENV["FORCE_DEPLOY"]
-      UI.important("This lane is meant to be run in CI environment")
-      UI.important("Set FORCE_DEPLOY=true to run outside CI")
-      next
+      UI.user_error!("This lane is meant to be run in CI environment. Set FORCE_DEPLOY=true to run outside CI")
     end
 
     build_release
@@ -87,8 +89,7 @@ platform :android do
     credentials_path = File.expand_path("../play-store-credentials.json", __dir__)
     
     unless File.exist?(credentials_path)
-      UI.error("❌ play-store-credentials.json not found at: #{credentials_path}")
-      next
+      UI.user_error!("❌ play-store-credentials.json not found at: #{credentials_path}")
     end
 
     UI.message("✅ Found credentials at: #{credentials_path}")
@@ -99,17 +100,19 @@ platform :android do
     version_file = File.expand_path("../version.properties", __dir__)
     
     unless File.exist?(version_file)
-      UI.error("❌ version.properties not found at: #{version_file}")
-      next
+      UI.user_error!("❌ version.properties not found at: #{version_file}")
     end
     
-    version_data = {}
-    File.foreach(version_file) do |line|
-      key, value = line.strip.split('=')
-      version_data[key.downcase.to_sym] = value.to_i
+    begin
+      version_data = {}
+      File.foreach(version_file) do |line|
+        key, value = line.strip.split('=')
+        version_data[key.downcase.to_sym] = value.to_i if key && value
+      end
+      version_data
+    rescue => e
+      UI.user_error!("❌ Error reading version file: #{e.message}")
     end
-    
-    version_data
   end
 
   desc "Commit version changes"
@@ -134,21 +137,28 @@ platform :android do
   lane :update_version do |options|
     version_file = File.expand_path("../version.properties", __dir__)
     
-    major = options[:major] || 0
-    minor = options[:minor] || 0
-    patch = options[:patch] || 0
-    version_code = options[:version_code] || 0
-    
-    File.open(version_file, 'w') do |f|
-      f.puts "VERSION_MAJOR=#{major}"
-      f.puts "VERSION_MINOR=#{minor}"
-      f.puts "VERSION_PATCH=#{patch}"
-      f.puts "VERSION_CODE=#{version_code}"
+    unless File.exist?(version_file)
+      UI.user_error!("❌ version.properties not found at: #{version_file}")
     end
-    
-    UI.success("✅ Version updated to #{major}.#{minor}.#{patch} (#{version_code})")
 
-    commit_version_changes
+    begin
+      major = options[:major] || 0
+      minor = options[:minor] || 0
+      patch = options[:patch] || 0
+      version_code = options[:version_code] || 0
+      
+      File.open(version_file, 'w') do |f|
+        f.puts "VERSION_MAJOR=#{major}"
+        f.puts "VERSION_MINOR=#{minor}"
+        f.puts "VERSION_PATCH=#{patch}"
+        f.puts "VERSION_CODE=#{version_code}"
+      end
+      
+      UI.success("✅ Version updated to #{major}.#{minor}.#{patch} (#{version_code})")
+      commit_version_changes
+    rescue => e
+      UI.user_error!("❌ Error updating version: #{e.message}")
+    end
   end
 
   desc "Bump version and update version.properties"
