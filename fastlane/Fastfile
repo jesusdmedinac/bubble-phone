@@ -17,14 +17,14 @@ platform :android do
     test_android
   end
 
-  desc "Build debug APK"
+  desc "Build debug Bundle"
   lane :build_debug do
-    sh("cd .. && ./gradlew :composeApp:assembleDebug")
+    sh("cd .. && ./gradlew :composeApp:bundleDebug")
   end
 
   desc "Build release APK"
   lane :build_release do
-    sh("cd .. && ./gradlew :composeApp:assembleRelease")
+    sh("cd .. && ./gradlew :composeApp:bundleRelease")
   end
 
   desc "Run CI pipeline"
@@ -37,6 +37,7 @@ platform :android do
     test
     
     build_debug
+    build_release
   end
 
   desc "Build and deploy a new version to Google Play Internal Testing"
@@ -48,7 +49,7 @@ platform :android do
       next
     end
 
-    sh("cd .. && ./gradlew :composeApp:bundleRelease")
+    build_release
     
     track = ENV["TRACK"] || 'internal'
     package_name = options[:package_name] || CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
