@@ -1,6 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -54,6 +55,15 @@ kotlin {
     }
 }
 
+fun readVersionProperties(): Properties {
+    val properties = Properties()
+    val versionFile = rootProject.file("version.properties")
+    if (versionFile.exists()) {
+        properties.load(versionFile.inputStream())
+    }
+    return properties
+}
+
 android {
     namespace = "com.jesusdmedinac.bubble.phone"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -62,8 +72,8 @@ android {
         applicationId = "com.jesusdmedinac.bubble.phone"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = readVersionProperties().getProperty("VERSION_CODE")?.toInt() ?: 1
+        versionName = readVersionProperties().getProperty("VERSION_NAME") ?: "1.0"
     }
     
     signingConfigs {
