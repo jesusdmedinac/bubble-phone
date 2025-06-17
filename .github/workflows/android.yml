@@ -57,6 +57,7 @@ jobs:
 
       - name: Generate bubble-phone-keystore.jks
         run: |
+          mkdir -p "$GITHUB_WORKSPACE/keystore"
           echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
           
       - name: Run Fastlane CI
@@ -133,6 +134,7 @@ jobs:
       
       - name: Generate bubble-phone-keystore.jks
         run: |
+          mkdir -p "$GITHUB_WORKSPACE/keystore"
           echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
         
       - name: Deploy to Internal Testing
