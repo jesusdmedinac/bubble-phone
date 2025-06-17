@@ -117,15 +117,7 @@ jobs:
 
       - name: Generate play-store-credentials.json
         run: |
-          # Crear el archivo en la raíz del proyecto
-          CREDENTIALS_PATH="$GITHUB_WORKSPACE/play-store-credentials.json"
-          echo '${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}' > "$CREDENTIALS_PATH"
-          
-          # Mostrar información de depuración sin exponer credenciales
-          echo "✅ Archivo creado en: $CREDENTIALS_PATH"
-          echo -e "📂 Contenido del directorio ($GITHUB_WORKSPACE):"
-          ls -la "$GITHUB_WORKSPACE"
-          echo -e "\n✅ Archivo de credenciales creado correctamente"
+          echo '${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}' > "$GITHUB_WORKSPACE/play-store-credentials.json"
         
       - name: Deploy to Internal Testing
         run: bundle exec fastlane internal

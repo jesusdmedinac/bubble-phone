@@ -86,8 +86,6 @@ platform :android do
     
     unless File.exist?(credentials_path)
       UI.error("❌ play-store-credentials.json not found at: #{credentials_path}")
-      UI.error("Current directory: #{Dir.pwd}")
-      UI.error("Directory contents: #{Dir.glob('*').join(', ')}")
       next
     end
 
