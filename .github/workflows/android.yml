@@ -144,8 +144,8 @@ jobs:
         id: version_info
         run: |
           # Lee los valores del archivo de versión de Fastlane
-          VERSION_NAME=$(grep "version_name" fastlane/version.properties | cut -d'=' -f2)
-          VERSION_CODE=$(grep "version_code" fastlane/version.properties | cut -d'=' -f2)
+          VERSION_NAME=$(grep "version_name" version.properties | cut -d'=' -f2)
+          VERSION_CODE=$(grep "version_code" version.properties | cut -d'=' -f2)
           
           echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
           echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
@@ -200,11 +200,14 @@ jobs:
         run: |
           mkdir -p "$GITHUB_WORKSPACE/keystore"
           echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
-        
-      - name: Show version info
+
+      - name: Update version.properties
         run: |
-          echo "Deploying version: ${{ env.VERSION_NAME }} (${{ env.VERSION_CODE }})"
-          
+          echo "VERSION_CODE=${{ env.VERSION_CODE }}" >> version.properties
+          echo "VERSION_MAJOR=$(echo ${{ env.VERSION_NAME }} | cut -d'.' -f1)" >> version.properties
+          echo "VERSION_MINOR=$(echo ${{ env.VERSION_NAME }} | cut -d'.' -f2)" >> version.properties
+          echo "VERSION_PATCH=$(echo ${{ env.VERSION_NAME }} | cut -d'.' -f3)" >> version.properties
+
       - name: Deploy to Internal Testing
         run: bundle exec fastlane internal
         env:
