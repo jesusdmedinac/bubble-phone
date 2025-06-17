@@ -119,18 +119,44 @@ platform :android do
   lane :commit_version_changes do
     UI.message("Committing version changes...")
     
+    setup_git(
+      username: 'GitHub Actions Bot',
+      email: 'actions@github.com'
+    )
+    
     version_data = read_version_file
     version_name = "#{version_data[:version_major]}.#{version_data[:version_minor]}.#{version_data[:version_patch]}"
     version_code = version_data[:version_code]
-
-    sh("cd .. && git add version.properties")
-    sh("cd .. && git commit -m 'Bump version to #{version_name} (#{version_code})'")
+    commit_message = "Bump version to #{version_name} (#{version_code})"
+    
+    if ENV['GITHUB_TOKEN']
+      repo_url = "https://x-access-token:#{ENV['GITHUB_TOKEN']}@github.com/jesusdmedinac/bubble-phone.git"
+      sh("git remote set-url origin #{repo_url}")
+    end
+    
+    git_add(path: "version.properties")
+    
+    git_commit(
+      path: ".",
+      message: commit_message,
+      skip_git_hooks: false
+    )
+    
     UI.success("✅ Version changes committed")
-
-    # Dev branch only for test purposes.
-    # TODO: Change it to master
-    sh("cd .. && git push origin HEAD:dev")
-    UI.success("✅ Version changes pushed to dev branch")
+    
+    begin
+      push_to_git_remote(
+        remote: "origin",
+        local_branch: current_git_branch,
+        remote_branch: current_git_branch,
+        force: false,
+        tags: false
+      )
+      UI.success("✅ Version changes pushed to #{current_git_branch} branch")
+    rescue => e
+      UI.error("❌ Failed to push changes: #{e.message}")
+      raise e
+    end
   end
 
   desc "Update version.properties"

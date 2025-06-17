@@ -97,6 +97,13 @@ jobs:
     needs: test-and-build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev'
+    
+    # Dar permisos explícitos para escribir en el repositorio
+    permissions:
+      contents: write
+      pull-requests: write
+      statuses: write
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -120,13 +127,15 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Bump version
+      - name: Bump version and push changes
         run: bundle exec fastlane bump_version
         env:
           CI: true
           FASTLANE_SKIP_UPDATE_CHECK: true
           LANG: en_US.UTF-8
           LC_ALL: en_US.UTF-8
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
   deploy-internal:
     name: Deploy to Internal Testing
