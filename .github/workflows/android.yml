@@ -97,8 +97,10 @@ jobs:
     needs: test-and-build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev'
+    outputs:
+      version_name: ${{ steps.version_info.outputs.version_name }}
+      version_code: ${{ steps.version_info.outputs.version_code }}
     
-    # Dar permisos explícitos para escribir en el repositorio
     permissions:
       contents: write
       pull-requests: write
@@ -128,6 +130,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Bump version and push changes
+        id: bump_version
         run: bundle exec fastlane bump_version
         env:
           CI: true
@@ -136,12 +139,28 @@ jobs:
           LC_ALL: en_US.UTF-8
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          
+      - name: Get version info
+        id: version_info
+        run: |
+          # Lee los valores del archivo de versión de Fastlane
+          VERSION_NAME=$(grep "version_name" fastlane/version.properties | cut -d'=' -f2)
+          VERSION_CODE=$(grep "version_code" fastlane/version.properties | cut -d'=' -f2)
+          
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+          
+          echo "Version Name: $VERSION_NAME"
+          echo "Version Code: $VERSION_CODE"
 
   deploy-internal:
     name: Deploy to Internal Testing
     needs: bump-version
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
+    env:
+      VERSION_NAME: ${{ needs.bump-version.outputs.version_name }}
+      VERSION_CODE: ${{ needs.bump-version.outputs.version_code }}
 
     steps:
       - name: Checkout code
@@ -182,6 +201,10 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/keystore"
           echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
         
+      - name: Show version info
+        run: |
+          echo "Deploying version: ${{ env.VERSION_NAME }} (${{ env.VERSION_CODE }})"
+          
       - name: Deploy to Internal Testing
         run: bundle exec fastlane internal
         env:
@@ -190,6 +213,8 @@ jobs:
           LANG: en_US.UTF-8
           LC_ALL: en_US.UTF-8
           ENVIRONMENT: ${{ github.ref == 'refs/heads/master' && 'production' || 'development' }}
+          VERSION_NAME: ${{ env.VERSION_NAME }}
+          VERSION_CODE: ${{ env.VERSION_CODE }}
           KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ env.KEY_ALIAS }}
           KEY_PASSWORD: ${{ env.KEY_PASSWORD }}
