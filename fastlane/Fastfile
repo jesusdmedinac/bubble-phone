@@ -231,12 +231,12 @@ platform :android do
     patch_with_git_hash = "#{version_data[:version_patch]}-#{git_hash}"
     UI.message("Patch with git hash: #{patch_with_git_hash}")
 
-    update_version(
-      major: version_data[:version_major],
-      minor: version_data[:version_minor],
-      patch: patch_with_git_hash,
-      version_code: version_data[:version_code]
-    )
+    File.open(version_file, 'w') do |f|
+      f.puts "VERSION_MAJOR=#{version_data[:version_major]}"
+      f.puts "VERSION_MINOR=#{version_data[:version_minor]}"
+      f.puts "VERSION_PATCH=#{patch_with_git_hash}"
+      f.puts "VERSION_CODE=#{version_data[:version_code]}"
+    end
 
     build_release
     
