@@ -57,6 +57,11 @@ jobs:
       - name: Generate env.properties
         run: |
           echo '${{ secrets.ENV_PROPERTIES }}' > "$GITHUB_WORKSPACE/env.properties"
+
+      - name: Generate bubble-phone-keystore.jks
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/keystore"
+          echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
           
       - name: Run Fastlane CI
         run: bundle exec fastlane ci
