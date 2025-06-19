@@ -54,6 +54,10 @@ jobs:
         run: |
           mkdir -p "$GITHUB_WORKSPACE/keystore"
           echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
+
+      - name: Generate env.properties
+        run: |
+          echo '${{ secrets.ENV_PROPERTIES }}' > env.properties
           
       - name: Run Fastlane CI
         run: bundle exec fastlane ci
@@ -120,6 +124,10 @@ jobs:
         
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      - name: Generate env.properties
+        run: |
+          echo '${{ secrets.ENV_PROPERTIES }}' > env.properties
 
       - name: Bump version and push changes
         id: bump_version
@@ -208,6 +216,10 @@ jobs:
         run: |
           echo '${{ secrets.FIREBASE_CREDENTIALS_JSON }}' > firebase-credentials.json
 
+      - name: Generate env.properties
+        run: |
+          echo '${{ secrets.ENV_PROPERTIES }}' > env.properties
+      
       - name: Deploy to Internal Testing
         run: bundle exec fastlane internal
         env:
@@ -283,6 +295,10 @@ jobs:
             -storepass android -alias androiddebugkey -keypass android \
             -keyalg RSA -keysize 2048 -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Generate env.properties
+        run: |
+          echo '${{ secrets.ENV_PROPERTIES }}' > env.properties
 
       - name: Distribute to Firebase App Distribution
         run: bundle exec fastlane distribute_to_firebase
