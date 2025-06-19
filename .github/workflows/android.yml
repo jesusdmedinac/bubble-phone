@@ -50,10 +50,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Generate bubble-phone-keystore.jks
+      - name: Generate google-services.json
         run: |
-          mkdir -p "$GITHUB_WORKSPACE/keystore"
-          echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > "$GITHUB_WORKSPACE/google-services.json"
 
       - name: Generate env.properties
         run: |
@@ -77,7 +76,7 @@ jobs:
             **/build/reports/tests/**/*
           retention-days: 7
           
-      - name: Upload APK
+      - name: Upload artifacts
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
@@ -92,7 +91,7 @@ jobs:
     name: Bump Version
     needs: test-and-build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/master'
     outputs:
       version_name: ${{ steps.version_info.outputs.version_name }}
       version_code: ${{ steps.version_info.outputs.version_code }}
@@ -125,10 +124,6 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Generate env.properties
-        run: |
-          echo '${{ secrets.ENV_PROPERTIES }}' > env.properties
-
       - name: Bump version and push changes
         id: bump_version
         run: bundle exec fastlane bump_version
@@ -156,7 +151,7 @@ jobs:
   deploy-internal:
     name: Deploy to Internal Testing
     needs: bump-version
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     env:
       VERSION_NAME: ${{ needs.bump-version.outputs.version_name }}
@@ -212,14 +207,10 @@ jobs:
         run: |
           echo '${{ secrets.ENV_PROPERTIES }}' > env.properties
 
-      - name: Generate firebase-credentials.json
+      - name: Generate google-services.json
         run: |
-          echo '${{ secrets.FIREBASE_CREDENTIALS_JSON }}' > firebase-credentials.json
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > "$GITHUB_WORKSPACE/google-services.json"
 
-      - name: Generate env.properties
-        run: |
-          echo '${{ secrets.ENV_PROPERTIES }}' > env.properties
-      
       - name: Deploy to Internal Testing
         run: bundle exec fastlane internal
         env:
@@ -234,6 +225,7 @@ jobs:
   distribute-firebase:
     name: Distribute to Firebase
     needs: test-and-build
+    if: success()
     runs-on: ubuntu-latest
 
     steps:
@@ -270,17 +262,14 @@ jobs:
         run: |
           echo '${{ secrets.FIREBASE_CREDENTIALS_JSON }}' > "$GITHUB_WORKSPACE/firebase-credentials.json"
 
+      - name: Generate google-services.json
+        run: |
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > "$GITHUB_WORKSPACE/google-services.json"
+
       - name: Generate bubble-phone-keystore.jks
         run: |
           mkdir -p "$GITHUB_WORKSPACE/keystore"
           echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
-          
-      - name: Generate debug.keystore
-        run: |
-          keytool -genkey -v -keystore $GITHUB_WORKSPACE/keystore/debug.keystore \
-            -storepass android -alias androiddebugkey -keypass android \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Generate env.properties
         run: |
