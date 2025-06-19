@@ -231,6 +231,7 @@ platform :android do
     patch_with_git_hash = "#{version_data[:version_patch]}-#{git_hash}"
     UI.message("Patch with git hash: #{patch_with_git_hash}")
 
+    version_file = File.expand_path("../version.properties", __dir__)
     File.open(version_file, 'w') do |f|
       f.puts "VERSION_MAJOR=#{version_data[:version_major]}"
       f.puts "VERSION_MINOR=#{version_data[:version_minor]}"
