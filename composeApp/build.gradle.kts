@@ -84,8 +84,13 @@ android {
         applicationId = "com.jesusdmedinac.bubble.phone"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = readVersionProperties().getProperty("VERSION_CODE")?.toInt() ?: 1
-        versionName = readVersionProperties().getProperty("VERSION_NAME") ?: "1.0"
+        val versionProperties = readVersionProperties()
+        versionCode = versionProperties.getProperty("VERSION_CODE")?.toInt() ?: 1
+        val major = versionProperties.getProperty("VERSION_MAJOR")?.toInt() ?: 1
+        val minor = versionProperties.getProperty("VERSION_MINOR")?.toInt() ?: 0
+        val patch = versionProperties.getProperty("VERSION_PATCH")?.toInt() ?: 0
+        val versionNameFromVersionProperties = "$major.$minor.$patch"
+        versionName = versionNameFromVersionProperties
     }
     
     signingConfigs {
