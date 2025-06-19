@@ -17,51 +17,55 @@ platform :android do
     test_android
   end
 
-  desc "Build debug APK"
+  desc "Build debug Bundle"
   lane :build_debug do
-    sh("cd .. && ./gradlew :composeApp:assembleDebug")
+    sh("cd .. && ./gradlew :composeApp:bundleDebug")
   end
 
   desc "Build release APK"
   lane :build_release do
-    sh("cd .. && ./gradlew :composeApp:assembleRelease")
+    sh("cd .. && \
+      KEYSTORE_PASSWORD='#{ENV['KEYSTORE_PASSWORD']}' \
+      KEY_ALIAS='#{ENV['KEY_ALIAS']}' \
+      KEY_PASSWORD='#{ENV['KEY_PASSWORD']}' \
+      ./gradlew :composeApp:bundleRelease")
   end
 
   desc "Run CI pipeline"
   lane :ci do
     unless ENV["CI"]
       UI.important("Not running in CI environment")
-      next
+      UI.user_error!("This lane should only be run in a CI environment")
     end
     
-    test
-    
-    build_debug
+    begin
+      test
+      build_debug
+      build_release
+    rescue => e
+      UI.error("❌ CI pipeline failed: #{e.message}")
+      raise e
+    end
   end
 
   desc "Build and deploy a new version to Google Play Internal Testing"
   desc "This will build a release AAB and upload it to Google Play Internal Testing"
   lane :internal do |options|
     unless ENV["CI"] || ENV["FORCE_DEPLOY"]
-      UI.important("This lane is meant to be run in CI environment")
-      UI.important("Set FORCE_DEPLOY=true to run outside CI")
-      next
+      UI.user_error!("This lane is meant to be run in CI environment. Set FORCE_DEPLOY=true to run outside CI")
     end
 
-    sh("cd .. && ./gradlew :composeApp:bundleRelease")
+    build_release
     
     track = ENV["TRACK"] || 'internal'
-    package_name = options[:package_name] || package_name()
+    package_name = options[:package_name] || CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
     
-    aab_path = Dir["**/composeApp/build/outputs/bundle/release/*.aab"].first
+    aab_path = "composeApp/build/outputs/bundle/release/composeApp-release.aab"
     
-    if aab_path.nil? || !File.exist?(aab_path)
-      UI.error("No se encontró el archivo AAB. Asegúrate de que la compilación fue exitosa.")
-      next
-    end
-    
-    UI.message("Subiendo #{aab_path} a Google Play (#{track})...")
-    
+    UI.message("Uploading #{aab_path} to Google Play (#{track})...")
+
+    credentials_path = test_play_store_credentials
+
     upload_to_play_store(
       package_name: package_name,
       aab: aab_path,
@@ -73,9 +77,165 @@ platform :android do
       skip_upload_changelogs: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
-      json_key_data: ENV["GCLOUD_SERVICE_ACCOUNT_JSON"]
+      json_key: credentials_path,
+      validate_only: false,
+      timeout: 300
     )
     
-    UI.success("✅ Aplicación subida exitosamente a Google Play (#{track} track)!")
+    UI.success("✅ App uploaded successfully to Google Play (#{track} track)")
+  end
+
+  lane :test_play_store_credentials do
+    credentials_path = File.expand_path("../play-store-credentials.json", __dir__)
+    
+    unless File.exist?(credentials_path)
+      UI.user_error!("❌ play-store-credentials.json not found at: #{credentials_path}")
+    end
+
+    UI.message("✅ Found credentials at: #{credentials_path}")
+    credentials_path
+  end
+
+  def read_version_file
+    version_file = File.expand_path("../version.properties", __dir__)
+    
+    unless File.exist?(version_file)
+      UI.user_error!("❌ version.properties not found at: #{version_file}")
+    end
+    
+    begin
+      version_data = {}
+      File.foreach(version_file) do |line|
+        key, value = line.strip.split('=')
+        version_data[key.downcase.to_sym] = value.to_i if key && value
+      end
+      version_data
+    rescue => e
+      UI.user_error!("❌ Error reading version file: #{e.message}")
+    end
+  end
+
+  desc "Commit version changes"
+  lane :commit_version_changes do
+    UI.message("Committing version changes...")
+    
+    setup_git(
+      username: 'GitHub Actions Bot',
+      email: 'actions@github.com'
+    )
+    
+    version_data = read_version_file
+    version_name = "#{version_data[:version_major]}.#{version_data[:version_minor]}.#{version_data[:version_patch]}"
+    version_code = version_data[:version_code]
+    commit_message = "Bump version to #{version_name} (#{version_code}) [skip ci]"
+    
+    if ENV['GITHUB_TOKEN']
+      repo_url = "https://x-access-token:#{ENV['GITHUB_TOKEN']}@github.com/jesusdmedinac/bubble-phone.git"
+      sh("git remote set-url origin #{repo_url}")
+    end
+    
+    git_add(path: "version.properties")
+    
+    git_commit(
+      path: ".",
+      message: commit_message,
+      skip_git_hooks: false
+    )
+    
+    UI.success("✅ Version changes committed")
+
+    current_git_branch = git_branch
+    
+    begin
+      push_to_git_remote(
+        remote: "origin",
+        local_branch: current_git_branch,
+        remote_branch: current_git_branch,
+        force: false,
+        tags: false
+      )
+      UI.success("✅ Version changes pushed to #{current_git_branch} branch")
+    rescue => e
+      UI.error("❌ Failed to push changes: #{e.message}")
+      raise e
+    end
+  end
+
+  desc "Update version.properties"
+  lane :update_version do |options|
+    version_file = File.expand_path("../version.properties", __dir__)
+    
+    unless File.exist?(version_file)
+      UI.user_error!("❌ version.properties not found at: #{version_file}")
+    end
+
+    begin
+      major = options[:major] || 0
+      minor = options[:minor] || 0
+      patch = options[:patch] || 0
+      version_code = options[:version_code] || 0
+      
+      File.open(version_file, 'w') do |f|
+        f.puts "VERSION_MAJOR=#{major}"
+        f.puts "VERSION_MINOR=#{minor}"
+        f.puts "VERSION_PATCH=#{patch}"
+        f.puts "VERSION_CODE=#{version_code}"
+      end
+      
+      UI.success("✅ Version updated to #{major}.#{minor}.#{patch} (#{version_code})")
+      commit_version_changes
+    rescue => e
+      UI.user_error!("❌ Error updating version: #{e.message}")
+    end
+  end
+
+  desc "Bump version and update version.properties"
+  lane :bump_version do
+    version_data = read_version_file
+    
+    patch = version_data[:version_patch] + 1
+    version_code = version_data[:version_code] + 1
+
+    update_version(
+      major: version_data[:version_major],
+      minor: version_data[:version_minor],
+      patch: patch,
+      version_code: version_code
+    )
+
+    UI.success("✅ Version bumped to #{version_data[:version_major]}.#{version_data[:version_minor]}.#{patch} (#{version_code})")
+  end
+
+  desc "Configure git"
+  lane :setup_git do |options|
+    UI.message("Configuring git...")
+    
+    sh("git config --global user.name '#{options[:username]}'")
+    sh("git config --global user.email '#{options[:email]}'")
+    
+    UI.success("✅ Git configured")
+  end
+
+  desc "Distribute app to Firebase App Distribution"
+  desc "This will build a release AAB and upload it to Firebase App Distribution"
+  lane :distribute_to_firebase do |options|
+    unless ENV["CI"] || ENV["FORCE_DEPLOY"]
+      UI.user_error!("This lane is meant to be run in CI environment. Set FORCE_DEPLOY=true to run outside CI")
+    end
+
+    build_release
+    
+    aab_path = "composeApp/build/outputs/bundle/release/composeApp-release.aab"
+    
+    firebase_app_distribution(
+      app: "1:973832178689:android:485ef89519e88f9f728400",
+      service_credentials_file: "firebase-credentials.json",
+      android_artifact_type: "AAB",
+      android_artifact_path: aab_path,
+      release_notes: "New version of the app with improvements and bug fixes",
+      groups: "bubblers"
+    )
+    
+    UI.success("✅ App sent to Firebase App Distribution")
   end
 end

@@ -49,6 +49,19 @@ jobs:
         
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      - name: Generate google-services.json
+        run: |
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > "$GITHUB_WORKSPACE/composeApp/google-services.json"
+
+      - name: Generate env.properties
+        run: |
+          echo '${{ secrets.ENV_PROPERTIES }}' > "$GITHUB_WORKSPACE/env.properties"
+
+      - name: Generate bubble-phone-keystore.jks
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/keystore"
+          echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
           
       - name: Run Fastlane CI
         run: bundle exec fastlane ci
@@ -68,7 +81,7 @@ jobs:
             **/build/reports/tests/**/*
           retention-days: 7
           
-      - name: Upload APK
+      - name: Upload artifacts
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
@@ -78,11 +91,146 @@ jobs:
             **/build/outputs/bundle/**/*.aab
           retention-days: 7
           compression-level: 9
+  
+  bump-version:
+    name: Bump Version
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    outputs:
+      version_name: ${{ steps.version_info.outputs.version_name }}
+      version_code: ${{ steps.version_info.outputs.version_code }}
+    
+    permissions:
+      contents: write
+      pull-requests: write
+      statuses: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.2'
+          bundler-cache: true
+          cache-version: 1
+          
+      - name: Install Fastlane
+        run: |
+          gem install bundler
+          bundle config path 'vendor/bundle'
+          bundle install --jobs 4 --retry 3
+        
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Bump version and push changes
+        id: bump_version
+        run: bundle exec fastlane bump_version
+        env:
+          CI: true
+          FASTLANE_SKIP_UPDATE_CHECK: true
+          LANG: en_US.UTF-8
+          LC_ALL: en_US.UTF-8
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          
+      - name: Get version info
+        id: version_info
+        run: |
+          VERSION_MAJOR=$(grep "VERSION_MAJOR" version.properties | cut -d'=' -f2)
+          VERSION_MINOR=$(grep "VERSION_MINOR" version.properties | cut -d'=' -f2)
+          VERSION_PATCH=$(grep "VERSION_PATCH" version.properties | cut -d'=' -f2)
+          VERSION_CODE=$(grep "VERSION_CODE" version.properties | cut -d'=' -f2)
+          VERSION_NAME="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT          
+          echo "Version Name: $VERSION_NAME"
+          echo "Version Code: $VERSION_CODE"
 
   deploy-internal:
     name: Deploy to Internal Testing
-    needs: test-and-build
+    needs: bump-version
     if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    env:
+      VERSION_NAME: ${{ needs.bump-version.outputs.version_name }}
+      VERSION_CODE: ${{ needs.bump-version.outputs.version_code }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+          
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.2'
+          bundler-cache: true
+          cache-version: 1
+          
+      - name: Install Fastlane
+        run: |
+          gem install bundler
+          bundle config path 'vendor/bundle'
+          bundle install --jobs 4 --retry 3
+          
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Generate play-store-credentials.json
+        run: |
+          echo '${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}' > "$GITHUB_WORKSPACE/play-store-credentials.json"
+      
+      - name: Generate bubble-phone-keystore.jks
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/keystore"
+          echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
+
+      - name: Update version.properties
+        run: |
+          echo "VERSION_CODE=${{ env.VERSION_CODE }}" >> version.properties
+          echo "VERSION_MAJOR=$(echo ${{ env.VERSION_NAME }} | cut -d'.' -f1)" >> version.properties
+          echo "VERSION_MINOR=$(echo ${{ env.VERSION_NAME }} | cut -d'.' -f2)" >> version.properties
+          echo "VERSION_PATCH=$(echo ${{ env.VERSION_NAME }} | cut -d'.' -f3)" >> version.properties
+
+      - name: Generate env.properties
+        run: |
+          echo '${{ secrets.ENV_PROPERTIES }}' > "$GITHUB_WORKSPACE/env.properties"
+
+      - name: Generate google-services.json
+        run: |
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > "$GITHUB_WORKSPACE/composeApp/google-services.json"
+
+      - name: Deploy to Internal Testing
+        run: bundle exec fastlane internal
+        env:
+          CI: true
+          FASTLANE_SKIP_UPDATE_CHECK: true
+          LANG: en_US.UTF-8
+          LC_ALL: en_US.UTF-8
+          ENVIRONMENT: ${{ github.ref == 'refs/heads/master' && 'production' || 'development' }}
+          VERSION_NAME: ${{ env.VERSION_NAME }}
+          VERSION_CODE: ${{ env.VERSION_CODE }}
+
+  distribute-firebase:
+    name: Distribute to Firebase
+    needs: test-and-build
+    if: success()
     runs-on: ubuntu-latest
 
     steps:
@@ -114,13 +262,31 @@ jobs:
           
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-        
-      - name: Deploy to Internal Testing
-        run: bundle exec fastlane internal
+
+      - name: Generate firebase-credentials.json
+        run: |
+          echo '${{ secrets.FIREBASE_CREDENTIALS_JSON }}' > "$GITHUB_WORKSPACE/firebase-credentials.json"
+
+      - name: Generate google-services.json
+        run: |
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > "$GITHUB_WORKSPACE/composeApp/google-services.json"
+
+      - name: Generate bubble-phone-keystore.jks
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/keystore"
+          echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
+
+      - name: Generate env.properties
+        run: |
+          echo '${{ secrets.ENV_PROPERTIES }}' > "$GITHUB_WORKSPACE/env.properties"
+
+      - name: Distribute to Firebase App Distribution
+        run: bundle exec fastlane distribute_to_firebase
         env:
           CI: true
           FASTLANE_SKIP_UPDATE_CHECK: true
           LANG: en_US.UTF-8
           LC_ALL: en_US.UTF-8
-          GCLOUD_SERVICE_ACCOUNT_JSON: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}
-          # TRACK: internal
+          FORCE_DEPLOY: true
+          VERSION_NAME: ${{ env.VERSION_NAME }}
+          VERSION_CODE: ${{ env.VERSION_CODE }}

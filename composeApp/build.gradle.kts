@@ -1,12 +1,14 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    id("com.google.gms.google-services")
 }
 
 kotlin {
@@ -34,6 +36,8 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
+            implementation(project.dependencies.platform("com.google.firebase:firebase-bom:33.15.0"))
+            implementation("com.google.firebase:firebase-analytics")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -54,6 +58,24 @@ kotlin {
     }
 }
 
+fun readVersionProperties(): Properties {
+    val properties = Properties()
+    val versionFile = rootProject.file("version.properties")
+    if (versionFile.exists()) {
+        properties.load(versionFile.inputStream())
+    }
+    return properties
+}
+
+fun readEnvProperties(): Properties {
+    val properties = Properties()
+    val envFile = rootProject.file("env.properties")
+    if (envFile.exists()) {
+        properties.load(envFile.inputStream())
+    }
+    return properties
+}
+
 android {
     namespace = "com.jesusdmedinac.bubble.phone"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -62,8 +84,24 @@ android {
         applicationId = "com.jesusdmedinac.bubble.phone"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = readVersionProperties().getProperty("VERSION_CODE")?.toInt() ?: 1
+        versionName = readVersionProperties().getProperty("VERSION_NAME") ?: "1.0"
+    }
+    
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file(readEnvProperties().getProperty("KEYSTORE_PATH_RELEASE") ?: "")
+            storePassword = readEnvProperties().getProperty("KEYSTORE_PASSWORD") ?: ""
+            keyAlias = readEnvProperties().getProperty("KEY_ALIAS") ?: ""
+            keyPassword = readEnvProperties().getProperty("KEY_PASSWORD") ?: ""
+        }
+        
+        getByName("debug") {
+            storeFile = File(readEnvProperties().getProperty("KEYSTORE_PATH_DEBUG") ?: "")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
     packaging {
         resources {
@@ -71,8 +109,14 @@ android {
         }
     }
     buildTypes {
+        getByName("debug") {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
+        }
+        
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
