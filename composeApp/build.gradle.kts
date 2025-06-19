@@ -85,10 +85,10 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         val versionProperties = readVersionProperties()
-        versionCode = versionProperties.getProperty("VERSION_CODE")?.toInt() ?: 1
-        val major = versionProperties.getProperty("VERSION_MAJOR")?.toInt() ?: 1
-        val minor = versionProperties.getProperty("VERSION_MINOR")?.toInt() ?: 0
-        val patch = versionProperties.getProperty("VERSION_PATCH")?.toInt() ?: 0
+        versionCode = versionProperties.getProperty("VERSION_CODE")
+        val major = versionProperties.getProperty("VERSION_MAJOR")
+        val minor = versionProperties.getProperty("VERSION_MINOR")
+        val patch = versionProperties.getProperty("VERSION_PATCH")
         val versionNameFromVersionProperties = "$major.$minor.$patch"
         versionName = versionNameFromVersionProperties
     }
