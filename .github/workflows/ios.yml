@@ -56,6 +56,10 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         
+      - name: Generate env.properties
+        run: |
+          echo '${{ secrets.ENV_PROPERTIES }}' > env.properties
+
       - name: Run Fastlane CI
         working-directory: ./iosApp
         run: bundle exec fastlane ci
@@ -64,10 +68,6 @@ jobs:
           FASTLANE_SKIP_UPDATE_CHECK: true
           LANG: en_US.UTF-8
           LC_ALL: en_US.UTF-8
-
-      - name: Generate env.properties
-        run: |
-          echo '${{ secrets.ENV_PROPERTIES }}' > env.properties
           
       - name: Upload test results
         if: always()

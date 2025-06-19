@@ -230,17 +230,11 @@ jobs:
           ENVIRONMENT: ${{ github.ref == 'refs/heads/master' && 'production' || 'development' }}
           VERSION_NAME: ${{ env.VERSION_NAME }}
           VERSION_CODE: ${{ env.VERSION_CODE }}
-    
-          # TRACK: internal
 
   distribute-firebase:
     name: Distribute to Firebase
     needs: test-and-build
-    if: needs.deploy-internal.outputs.deployed == 'true' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
     runs-on: ubuntu-latest
-    env:
-      VERSION_NAME: ${{ needs.bump-version.outputs.version_name }}
-      VERSION_CODE: ${{ needs.bump-version.outputs.version_code }}
 
     steps:
       - name: Checkout code
@@ -276,14 +270,6 @@ jobs:
         run: |
           echo '${{ secrets.FIREBASE_CREDENTIALS_JSON }}' > "$GITHUB_WORKSPACE/firebase-credentials.json"
 
-      - name: Generate env.properties
-        run: |
-          echo "KEYSTORE_PATH_RELEASE=$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks" > env.properties
-          echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> env.properties
-          echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> env.properties
-          echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> env.properties
-          echo "KEYSTORE_PATH_DEBUG=$GITHUB_WORKSPACE/keystore/debug.keystore" >> env.properties
-
       - name: Generate bubble-phone-keystore.jks
         run: |
           mkdir -p "$GITHUB_WORKSPACE/keystore"
@@ -310,4 +296,3 @@ jobs:
           FORCE_DEPLOY: true
           VERSION_NAME: ${{ env.VERSION_NAME }}
           VERSION_CODE: ${{ env.VERSION_CODE }}
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
