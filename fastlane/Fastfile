@@ -223,7 +223,7 @@ platform :android do
       UI.user_error!("This lane is meant to be run in CI environment. Set FORCE_DEPLOY=true to run outside CI")
     end
 
-    git_hash = last_git_commit
+    git_hash = last_git_commit[:abbreviated_commit_hash]
     UI.message("Git hash: #{git_hash}")
 
     version_data = read_version_file
