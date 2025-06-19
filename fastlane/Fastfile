@@ -223,6 +223,21 @@ platform :android do
       UI.user_error!("This lane is meant to be run in CI environment. Set FORCE_DEPLOY=true to run outside CI")
     end
 
+    git_hash = sh("git rev-parse HEAD").strip
+    UI.message("Git hash: #{git_hash}")
+
+    version_data = read_version_file
+    
+    patch_with_git_hash = "#{version_data[:version_patch]}-#{git_hash}"
+    UI.message("Patch with git hash: #{patch_with_git_hash}")
+
+    update_version(
+      major: version_data[:version_major],
+      minor: version_data[:version_minor],
+      patch: patch_with_git_hash,
+      version_code: version_data[:version_code]
+    )
+
     build_release
     
     aab_path = "composeApp/build/outputs/bundle/release/composeApp-release.aab"
