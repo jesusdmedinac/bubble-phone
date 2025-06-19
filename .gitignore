@@ -17,6 +17,11 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 keystore/*.jks
+env.properties
+
+# Firebase
+composeApp/google-services.json
+firebase-credentials.json
 
 # Fastlane
 .env

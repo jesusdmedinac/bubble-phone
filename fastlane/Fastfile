@@ -215,4 +215,27 @@ platform :android do
     
     UI.success("✅ Git configured")
   end
+
+  desc "Distribute app to Firebase App Distribution"
+  desc "This will build a release AAB and upload it to Firebase App Distribution"
+  lane :distribute_to_firebase do |options|
+    unless ENV["CI"] || ENV["FORCE_DEPLOY"]
+      UI.user_error!("This lane is meant to be run in CI environment. Set FORCE_DEPLOY=true to run outside CI")
+    end
+
+    build_release
+    
+    aab_path = "composeApp/build/outputs/bundle/release/composeApp-release.aab"
+    
+    firebase_app_distribution(
+      app: "1:973832178689:android:485ef89519e88f9f728400",
+      service_credentials_file: "firebase-credentials.json",
+      android_artifact_type: "AAB",
+      android_artifact_path: aab_path,
+      release_notes: "New version of the app with improvements and bug fixes",
+      groups: "bubblers"
+    )
+    
+    UI.success("✅ App sent to Firebase App Distribution")
+  end
 end

@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    id("com.google.gms.google-services")
 }
 
 kotlin {
@@ -35,6 +36,8 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
+            implementation(project.dependencies.platform("com.google.firebase:firebase-bom:33.15.0"))
+            implementation("com.google.firebase:firebase-analytics")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -64,6 +67,15 @@ fun readVersionProperties(): Properties {
     return properties
 }
 
+fun readEnvProperties(): Properties {
+    val properties = Properties()
+    val envFile = rootProject.file("env.properties")
+    if (envFile.exists()) {
+        properties.load(envFile.inputStream())
+    }
+    return properties
+}
+
 android {
     namespace = "com.jesusdmedinac.bubble.phone"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -78,14 +90,14 @@ android {
     
     signingConfigs {
         create("release") {
-            storeFile = rootProject.file("keystore/bubble-phone-keystore.jks")
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
-            keyAlias = System.getenv("KEY_ALIAS") ?: ""
-            keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            storeFile = rootProject.file(readEnvProperties().getProperty("KEYSTORE_PATH_RELEASE") ?: "")
+            storePassword = readEnvProperties().getProperty("KEYSTORE_PASSWORD") ?: ""
+            keyAlias = readEnvProperties().getProperty("KEY_ALIAS") ?: ""
+            keyPassword = readEnvProperties().getProperty("KEY_PASSWORD") ?: ""
         }
         
         getByName("debug") {
-            storeFile = rootProject.file("debug.keystore")
+            storeFile = File(readEnvProperties().getProperty("KEYSTORE_PATH_DEBUG") ?: "")
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"
