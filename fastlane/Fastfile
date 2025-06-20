@@ -52,7 +52,7 @@ platform :android do
 
   desc "Build and deploy a new version to Google Play Internal Testing"
   desc "This will build a release AAB and upload it to Google Play Internal Testing"
-  lane :internal
+  lane :internal do
     env_properties = read_env_properties
     unless env_properties['CI'] || env_properties['FORCE_DEPLOY']
       UI.user_error!("This lane is meant to be run in CI environment. Set FORCE_DEPLOY=true to run outside CI")
