@@ -61,8 +61,6 @@ jobs:
       - name: Add CI to env.properties
         run: |
           echo 'CI=true' >> "$GITHUB_WORKSPACE/env.properties"
-          echo "Contenido de env.properties:"
-          cat "$GITHUB_WORKSPACE/env.properties"
 
       - name: Generate bubble-phone-keystore.jks
         run: |

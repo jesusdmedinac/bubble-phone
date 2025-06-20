@@ -26,16 +26,16 @@ platform :android do
   lane :build_release do
     env_properties = read_env_properties
     sh("cd .. && \
-      KEYSTORE_PASSWORD='#{env_properties['KEYSTORE_PASSWORD']}' \
-      KEY_ALIAS='#{env_properties['KEY_ALIAS']}' \
-      KEY_PASSWORD='#{env_properties['KEY_PASSWORD']}' \
+      KEYSTORE_PASSWORD='#{env_properties[:keystore_password]}' \
+      KEY_ALIAS='#{env_properties[:key_alias]}' \
+      KEY_PASSWORD='#{env_properties[:key_password]}' \
       ./gradlew :composeApp:bundleRelease")
   end
 
   desc "Run test and build pipeline"
   lane :test_and_build do
     env_properties = read_env_properties
-    unless env_properties['CI']
+    unless env_properties[:ci]
       UI.important("Not running in CI environment")
       UI.user_error!("This lane should only be run in a CI environment")
     end
@@ -54,7 +54,7 @@ platform :android do
   desc "This will build a release AAB and upload it to Google Play Internal Testing"
   lane :internal do
     env_properties = read_env_properties
-    unless env_properties['CI'] || env_properties['FORCE_DEPLOY']
+    unless env_properties[:ci] || env_properties[:force_deploy]
       UI.user_error!("This lane is meant to be run in CI environment. Set FORCE_DEPLOY=true to run outside CI")
     end
 
@@ -138,8 +138,8 @@ platform :android do
     commit_message = "Bump version to #{version_name} (#{version_code}) [skip ci]"
     
     env_properties = read_env_properties
-    if env_properties['GITHUB_TOKEN']
-      repo_url = "https://x-access-token:#{env_properties['GITHUB_TOKEN']}@github.com/jesusdmedinac/bubble-phone.git"
+    if env_properties[:github_token]
+      repo_url = "https://x-access-token:#{env_properties[:github_token]}@github.com/jesusdmedinac/bubble-phone.git"
       sh("git remote set-url origin #{repo_url}")
     end
     
@@ -229,7 +229,7 @@ platform :android do
   desc "This will build a release AAB and upload it to Firebase App Distribution"
   lane :distribute_to_firebase do |options|
     env_properties = read_env_properties
-    unless env_properties['CI'] || env_properties['FORCE_DEPLOY']
+    unless env_properties[:ci] || env_properties[:force_deploy]
       UI.user_error!("This lane is meant to be run in CI environment. Set FORCE_DEPLOY=true to run outside CI")
     end
 
