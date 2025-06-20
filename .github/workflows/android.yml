@@ -58,18 +58,17 @@ jobs:
         run: |
           echo '${{ secrets.ENV_PROPERTIES }}' > "$GITHUB_WORKSPACE/env.properties"
 
+      - name: Add CI to env.properties
+        run: |
+          echo 'CI=true' >> "$GITHUB_WORKSPACE/env.properties"
+
       - name: Generate bubble-phone-keystore.jks
         run: |
           mkdir -p "$GITHUB_WORKSPACE/keystore"
           echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
-          
+
       - name: Run Fastlane CI
-        run: bundle exec fastlane ci
-        env:
-          CI: true
-          FASTLANE_SKIP_UPDATE_CHECK: true
-          LANG: en_US.UTF-8
-          LC_ALL: en_US.UTF-8
+        run: bundle exec fastlane test_and_build
           
       - name: Upload test results
         if: always()
@@ -85,7 +84,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
-          name: android-apks
+          name: android-artifacts
           path: |
             **/build/outputs/apk/**/*.apk
             **/build/outputs/bundle/**/*.aab
@@ -212,6 +211,10 @@ jobs:
         run: |
           echo '${{ secrets.ENV_PROPERTIES }}' > "$GITHUB_WORKSPACE/env.properties"
 
+      - name: Add CI to env.properties
+        run: |
+          echo 'CI=true' >> "$GITHUB_WORKSPACE/env.properties"
+
       - name: Generate google-services.json
         run: |
           echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > "$GITHUB_WORKSPACE/composeApp/google-services.json"
@@ -279,6 +282,10 @@ jobs:
       - name: Generate env.properties
         run: |
           echo '${{ secrets.ENV_PROPERTIES }}' > "$GITHUB_WORKSPACE/env.properties"
+
+      - name: Add CI to env.properties
+        run: |
+          echo 'CI=true' >> "$GITHUB_WORKSPACE/env.properties"
 
       - name: Distribute to Firebase App Distribution
         run: bundle exec fastlane distribute_to_firebase
