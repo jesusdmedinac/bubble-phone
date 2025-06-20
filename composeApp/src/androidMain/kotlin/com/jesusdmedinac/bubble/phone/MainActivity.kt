@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
+import com.jesusdmedinac.bubble.phone.di.koinAndroidModules
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.koinInject
 
@@ -24,6 +25,7 @@ class MainActivity : ComponentActivity() {
                 BubblePhoneApp(
                     koinAppDeclaration = {
                         androidContext(this@MainActivity)
+                        koinAndroidModules()
                     }
                 )
             }

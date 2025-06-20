@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 }
@@ -54,6 +55,11 @@ kotlin {
             implementation(libs.koin.compose)
 
             implementation(libs.navigation.compose)
+
+            implementation(libs.kotlinx.serialization)
+
+            implementation(libs.androidx.datastore)
+            implementation(libs.androidx.datastore.preferences)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

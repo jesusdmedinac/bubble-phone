@@ -1,6 +1,9 @@
 package com.jesusdmedinac.bubble.phone
 
 import androidx.compose.runtime.Composable
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import com.jesusdmedinac.bubble.phone.data.store.BubblePhoneDataStore
 import org.koin.compose.KoinApplication
 import org.koin.core.KoinApplication
 import org.koin.dsl.KoinAppDeclaration
@@ -14,19 +17,19 @@ fun KoinApp(
     KoinApplication(
         application = {
             koinAppDeclaration()
-            koinModules()
+            koinAppModules()
         },
     ) {
         content()
     }
 }
 
-private fun KoinApplication.koinModules() {
+private fun KoinApplication.koinAppModules() {
     modules(
-        appModule(),
+        koinDataModule(),
     )
 }
 
-private fun appModule() = module {
-
+private fun koinDataModule() = module {
+    single { BubblePhoneDataStore(get<DataStore<Preferences>>()) }
 }
