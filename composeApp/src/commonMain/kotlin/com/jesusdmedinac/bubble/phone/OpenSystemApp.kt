@@ -4,7 +4,7 @@ import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
 
 enum class SystemApp {
-    MESSAGES, PHOTOS, BROWSER, NOTES, SETTINGS
+    MESSAGES, PHOTOS, BROWSER, SETTINGS
 }
 
 interface OpenSystemApp {

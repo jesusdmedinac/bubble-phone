@@ -12,6 +12,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import org.koin.android.ext.koin.androidContext
+import org.koin.compose.koinInject
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,28 +35,7 @@ class MainActivity : ComponentActivity() {
         content: @Composable () -> Unit,
     ) {
         val openSystemApp = remember {
-            object : OpenSystemApp {
-                override fun invoke(systemApp: SystemApp) {
-                    val intent = when (systemApp) {
-                        SystemApp.MESSAGES -> Intent(Intent.ACTION_MAIN).apply {
-                            addCategory(Intent.CATEGORY_APP_MESSAGING)
-                        }
-                        SystemApp.PHOTOS -> Intent(Intent.ACTION_VIEW).apply {
-                            addCategory(Intent.CATEGORY_APP_GALLERY)
-                        }
-                        SystemApp.BROWSER -> Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com"))
-                        SystemApp.NOTES -> {
-                            this@MainActivity.packageManager.getLaunchIntentForPackage("com.google.android.keep")
-                        }
-                        SystemApp.SETTINGS -> Intent(Settings.ACTION_SETTINGS)
-                    }
-
-                    intent?.let {
-                        it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        this@MainActivity.startActivity(it)
-                    }
-                }
-            }
+            AndroidOpenSystemApp(this@MainActivity)
         }
         CompositionLocalProvider(LocalOpenSystemApp provides openSystemApp) {
             content()
