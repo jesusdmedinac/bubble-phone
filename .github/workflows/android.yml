@@ -127,15 +127,19 @@ jobs:
         
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      
+      - name: Generate env.properties
+        run: |
+          echo '${{ secrets.ENV_PROPERTIES }}' > "$GITHUB_WORKSPACE/env.properties"
+
+      - name: Add CI to env.properties
+        run: |
+          echo 'CI=true' >> "$GITHUB_WORKSPACE/env.properties"
 
       - name: Bump version and push changes
         id: bump_version
         run: bundle exec fastlane bump_version
         env:
-          CI: true
-          FASTLANE_SKIP_UPDATE_CHECK: true
-          LANG: en_US.UTF-8
-          LC_ALL: en_US.UTF-8
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           
@@ -222,11 +226,6 @@ jobs:
       - name: Deploy to Internal Testing
         run: bundle exec fastlane internal
         env:
-          CI: true
-          FASTLANE_SKIP_UPDATE_CHECK: true
-          LANG: en_US.UTF-8
-          LC_ALL: en_US.UTF-8
-          ENVIRONMENT: ${{ github.ref == 'refs/heads/master' && 'production' || 'development' }}
           VERSION_NAME: ${{ env.VERSION_NAME }}
           VERSION_CODE: ${{ env.VERSION_CODE }}
 
@@ -290,10 +289,5 @@ jobs:
       - name: Distribute to Firebase App Distribution
         run: bundle exec fastlane distribute_to_firebase
         env:
-          CI: true
-          FASTLANE_SKIP_UPDATE_CHECK: true
-          LANG: en_US.UTF-8
-          LC_ALL: en_US.UTF-8
-          FORCE_DEPLOY: true
           VERSION_NAME: ${{ env.VERSION_NAME }}
           VERSION_CODE: ${{ env.VERSION_CODE }}
