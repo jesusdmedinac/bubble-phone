@@ -202,8 +202,8 @@ platform :android do
   lane :bump_version do
     version_properties = read_version_properties
     
-    patch = version_properties[:version_patch] + 1
-    version_code = version_properties[:version_code] + 1
+    patch = version_properties[:version_patch].to_i + 1
+    version_code = version_properties[:version_code].to_i + 1
 
     update_version(
       major: version_properties[:version_major],
