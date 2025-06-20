@@ -211,6 +211,10 @@ jobs:
         run: |
           echo '${{ secrets.ENV_PROPERTIES }}' > "$GITHUB_WORKSPACE/env.properties"
 
+      - name: Add CI to env.properties
+        run: |
+          echo 'CI=true' >> "$GITHUB_WORKSPACE/env.properties"
+
       - name: Generate google-services.json
         run: |
           echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > "$GITHUB_WORKSPACE/composeApp/google-services.json"
@@ -278,6 +282,10 @@ jobs:
       - name: Generate env.properties
         run: |
           echo '${{ secrets.ENV_PROPERTIES }}' > "$GITHUB_WORKSPACE/env.properties"
+
+      - name: Add CI to env.properties
+        run: |
+          echo 'CI=true' >> "$GITHUB_WORKSPACE/env.properties"
 
       - name: Distribute to Firebase App Distribution
         run: bundle exec fastlane distribute_to_firebase
