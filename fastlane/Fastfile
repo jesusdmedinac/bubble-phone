@@ -64,7 +64,7 @@ platform :android do
     
     aab_path = "composeApp/build/outputs/bundle/release/composeApp-release.aab"
     
-    UI.message("Uploading #{aab_path} to Google Play (#{track})...")
+    UI.message("Uploading #{aab_path} to Google Play (internal track)...")
 
     credentials_path = test_play_store_credentials
 
@@ -84,7 +84,7 @@ platform :android do
       timeout: 300
     )
     
-    UI.success("✅ App uploaded successfully to Google Play (#{track} track)")
+    UI.success("✅ App uploaded successfully to Google Play (internal track)")
   end
 
   lane :test_play_store_credentials do
@@ -202,8 +202,8 @@ platform :android do
   lane :bump_version do
     version_properties = read_version_properties
     
-    patch = version_properties[:version_patch] + 1
-    version_code = version_properties[:version_code] + 1
+    patch = version_properties[:version_patch].to_i + 1
+    version_code = version_properties[:version_code].to_i + 1
 
     update_version(
       major: version_properties[:version_major],
