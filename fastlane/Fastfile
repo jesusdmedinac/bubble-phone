@@ -24,16 +24,18 @@ platform :android do
 
   desc "Build release APK"
   lane :build_release do
+    env_properties = read_env_properties
     sh("cd .. && \
-      KEYSTORE_PASSWORD='#{ENV['KEYSTORE_PASSWORD']}' \
-      KEY_ALIAS='#{ENV['KEY_ALIAS']}' \
-      KEY_PASSWORD='#{ENV['KEY_PASSWORD']}' \
+      KEYSTORE_PASSWORD='#{env_properties['KEYSTORE_PASSWORD']}' \
+      KEY_ALIAS='#{env_properties['KEY_ALIAS']}' \
+      KEY_PASSWORD='#{env_properties['KEY_PASSWORD']}' \
       ./gradlew :composeApp:bundleRelease")
   end
 
-  desc "Run CI pipeline"
-  lane :ci do
-    unless ENV["CI"]
+  desc "Run test and build pipeline"
+  lane :test_and_build do
+    env_properties = read_env_properties
+    unless env_properties['CI']
       UI.important("Not running in CI environment")
       UI.user_error!("This lane should only be run in a CI environment")
     end
@@ -50,15 +52,15 @@ platform :android do
 
   desc "Build and deploy a new version to Google Play Internal Testing"
   desc "This will build a release AAB and upload it to Google Play Internal Testing"
-  lane :internal do |options|
-    unless ENV["CI"] || ENV["FORCE_DEPLOY"]
+  lane :internal
+    env_properties = read_env_properties
+    unless env_properties['CI'] || env_properties['FORCE_DEPLOY']
       UI.user_error!("This lane is meant to be run in CI environment. Set FORCE_DEPLOY=true to run outside CI")
     end
 
     build_release
     
-    track = ENV["TRACK"] || 'internal'
-    package_name = options[:package_name] || CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
+    package_name = CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
     
     aab_path = "composeApp/build/outputs/bundle/release/composeApp-release.aab"
     
@@ -69,7 +71,7 @@ platform :android do
     upload_to_play_store(
       package_name: package_name,
       aab: aab_path,
-      track: track,
+      track: 'internal',
       release_status: 'draft',
       skip_upload_apk: true,
       skip_upload_aab: false,
@@ -96,22 +98,28 @@ platform :android do
     credentials_path
   end
 
-  def read_version_file
-    version_file = File.expand_path("../version.properties", __dir__)
-    
-    unless File.exist?(version_file)
-      UI.user_error!("❌ version.properties not found at: #{version_file}")
+  def read_version_properties
+    read_properties_file("../version.properties")
+  end
+
+  def read_env_properties
+    read_properties_file("../env.properties")
+  end
+
+  def read_properties_file(file_path)
+    unless File.exist?(file_path)
+      UI.user_error!("❌ #{file_path} not found at: #{file_path}")
     end
     
     begin
-      version_data = {}
-      File.foreach(version_file) do |line|
+      properties = {}
+      File.foreach(file_path) do |line|
         key, value = line.strip.split('=')
-        version_data[key.downcase.to_sym] = value.to_i if key && value
+        properties[key.downcase.to_sym] = value if key && value
       end
-      version_data
+      properties
     rescue => e
-      UI.user_error!("❌ Error reading version file: #{e.message}")
+      UI.user_error!("❌ Error reading properties file: #{e.message}")
     end
   end
 
@@ -124,13 +132,14 @@ platform :android do
       email: 'actions@github.com'
     )
     
-    version_data = read_version_file
+    version_data = read_version_properties
     version_name = "#{version_data[:version_major]}.#{version_data[:version_minor]}.#{version_data[:version_patch]}"
     version_code = version_data[:version_code]
     commit_message = "Bump version to #{version_name} (#{version_code}) [skip ci]"
     
-    if ENV['GITHUB_TOKEN']
-      repo_url = "https://x-access-token:#{ENV['GITHUB_TOKEN']}@github.com/jesusdmedinac/bubble-phone.git"
+    env_properties = read_env_properties
+    if env_properties['GITHUB_TOKEN']
+      repo_url = "https://x-access-token:#{env_properties['GITHUB_TOKEN']}@github.com/jesusdmedinac/bubble-phone.git"
       sh("git remote set-url origin #{repo_url}")
     end
     
@@ -163,10 +172,10 @@ platform :android do
 
   desc "Update version.properties"
   lane :update_version do |options|
-    version_file = File.expand_path("../version.properties", __dir__)
+    version_properties_file = File.expand_path("../version.properties", __dir__)
     
-    unless File.exist?(version_file)
-      UI.user_error!("❌ version.properties not found at: #{version_file}")
+    unless File.exist?(version_properties_file)
+      UI.user_error!("❌ version.properties not found at: #{version_properties_file}")
     end
 
     begin
@@ -175,7 +184,7 @@ platform :android do
       patch = options[:patch] || 0
       version_code = options[:version_code] || 0
       
-      File.open(version_file, 'w') do |f|
+      File.open(version_properties_file, 'w') do |f|
         f.puts "VERSION_MAJOR=#{major}"
         f.puts "VERSION_MINOR=#{minor}"
         f.puts "VERSION_PATCH=#{patch}"
@@ -191,19 +200,19 @@ platform :android do
 
   desc "Bump version and update version.properties"
   lane :bump_version do
-    version_data = read_version_file
+    version_properties = read_version_properties
     
-    patch = version_data[:version_patch] + 1
-    version_code = version_data[:version_code] + 1
+    patch = version_properties[:version_patch] + 1
+    version_code = version_properties[:version_code] + 1
 
     update_version(
-      major: version_data[:version_major],
-      minor: version_data[:version_minor],
+      major: version_properties[:version_major],
+      minor: version_properties[:version_minor],
       patch: patch,
       version_code: version_code
     )
 
-    UI.success("✅ Version bumped to #{version_data[:version_major]}.#{version_data[:version_minor]}.#{patch} (#{version_code})")
+    UI.success("✅ Version bumped to #{version_properties[:version_major]}.#{version_properties[:version_minor]}.#{patch} (#{version_code})")
   end
 
   desc "Configure git"
@@ -219,24 +228,25 @@ platform :android do
   desc "Distribute app to Firebase App Distribution"
   desc "This will build a release AAB and upload it to Firebase App Distribution"
   lane :distribute_to_firebase do |options|
-    unless ENV["CI"] || ENV["FORCE_DEPLOY"]
+    env_properties = read_env_properties
+    unless env_properties['CI'] || env_properties['FORCE_DEPLOY']
       UI.user_error!("This lane is meant to be run in CI environment. Set FORCE_DEPLOY=true to run outside CI")
     end
 
     git_hash = last_git_commit[:abbreviated_commit_hash]
     UI.message("Git hash: #{git_hash}")
 
-    version_data = read_version_file
+    version_properties = read_version_properties
     
-    patch_with_git_hash = "#{version_data[:version_patch]}-#{git_hash}"
+    patch_with_git_hash = "#{version_properties[:version_patch]}-#{git_hash}"
     UI.message("Patch with git hash: #{patch_with_git_hash}")
 
-    version_file = File.expand_path("../version.properties", __dir__)
-    File.open(version_file, 'w') do |f|
-      f.puts "VERSION_MAJOR=#{version_data[:version_major]}"
-      f.puts "VERSION_MINOR=#{version_data[:version_minor]}"
+    version_properties_file = File.expand_path("../version.properties", __dir__)
+    File.open(version_properties_file, 'w') do |f|
+      f.puts "VERSION_MAJOR=#{version_properties[:version_major]}"
+      f.puts "VERSION_MINOR=#{version_properties[:version_minor]}"
       f.puts "VERSION_PATCH=#{patch_with_git_hash}"
-      f.puts "VERSION_CODE=#{version_data[:version_code]}"
+      f.puts "VERSION_CODE=#{version_properties[:version_code]}"
     end
 
     build_release

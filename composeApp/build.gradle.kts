@@ -1,4 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
@@ -37,7 +36,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(project.dependencies.platform("com.google.firebase:firebase-bom:33.15.0"))
-            implementation("com.google.firebase:firebase-analytics")
+            implementation(libs.firebase.analytics)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -85,7 +84,7 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         val versionProperties = readVersionProperties()
-        versionCode = versionProperties.getProperty("VERSION_CODE")
+        versionCode = versionProperties.getProperty("VERSION_CODE").toInt()
         val major = versionProperties.getProperty("VERSION_MAJOR")
         val minor = versionProperties.getProperty("VERSION_MINOR")
         val patch = versionProperties.getProperty("VERSION_PATCH")

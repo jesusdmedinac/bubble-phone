@@ -62,14 +62,9 @@ jobs:
         run: |
           mkdir -p "$GITHUB_WORKSPACE/keystore"
           echo '${{ secrets.BUBBLE_PHONE_KEYSTORE }}' | base64 --decode > "$GITHUB_WORKSPACE/keystore/bubble-phone-keystore.jks"
-          
+
       - name: Run Fastlane CI
-        run: bundle exec fastlane ci
-        env:
-          CI: true
-          FASTLANE_SKIP_UPDATE_CHECK: true
-          LANG: en_US.UTF-8
-          LC_ALL: en_US.UTF-8
+        run: bundle exec fastlane test_and_build
           
       - name: Upload test results
         if: always()
