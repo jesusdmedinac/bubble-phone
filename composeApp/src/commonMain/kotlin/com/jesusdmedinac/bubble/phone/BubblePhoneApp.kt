@@ -66,7 +66,6 @@ private fun SystemApp.toAppAvailable(): AppAvailable {
         SystemApp.MESSAGES -> Res.string.generic_app_name_messages
         SystemApp.PHOTOS -> Res.string.generic_app_name_photos
         SystemApp.BROWSER -> Res.string.generic_app_name_browser
-        SystemApp.NOTES -> Res.string.generic_app_name_notes
         SystemApp.SETTINGS -> Res.string.generic_app_name_settings
     }
     return AppAvailable(

@@ -34,6 +34,18 @@
 			path = Configuration;
 			sourceTree = "<group>";
 		};
+		D9DBDDCE2E05C39F00BD8C70 /* commonMain */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			name = commonMain;
+			path = ../composeApp/src/commonMain;
+			sourceTree = SOURCE_ROOT;
+		};
+		D9DBDDD72E05C39F00BD8C70 /* iosMain */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			name = iosMain;
+			path = ../composeApp/src/iosMain;
+			sourceTree = SOURCE_ROOT;
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +65,7 @@
 				B9DA98002DC14AA900A4DA20 /* Configuration */,
 				B9DA97B32DC1472C00A4DA20 /* iosApp */,
 				B9DA97B22DC1472C00A4DA20 /* Products */,
+				D9DBDDBA2E05C35400BD8C70 /* Kotlin Debug */,
 			);
 			sourceTree = "<group>";
 		};
@@ -62,6 +75,15 @@
 				B9DA97B12DC1472C00A4DA20 /* BubblePhone.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D9DBDDBA2E05C35400BD8C70 /* Kotlin Debug */ = {
+			isa = PBXGroup;
+			children = (
+				D9DBDDCE2E05C39F00BD8C70 /* commonMain */,
+				D9DBDDD72E05C39F00BD8C70 /* iosMain */,
+			);
+			path = "Kotlin Debug";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -82,6 +104,8 @@
 			);
 			fileSystemSynchronizedGroups = (
 				B9DA97B32DC1472C00A4DA20 /* iosApp */,
+				D9DBDDCE2E05C39F00BD8C70 /* commonMain */,
+				D9DBDDD72E05C39F00BD8C70 /* iosMain */,
 			);
 			name = iosApp;
 			packageProductDependencies = (

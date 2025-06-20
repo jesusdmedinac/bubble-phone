@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">BubblePhone</string>
-    <string name="generic_app_name_messages">messages</string>
-    <string name="generic_app_name_photos">photos</string>
-    <string name="generic_app_name_browser">browser</string>
-    <string name="generic_app_name_notes">notes</string>
-    <string name="generic_app_name_settings">settings</string>
+    <string name="app_name">Bubble Phone</string>
+    <string name="generic_app_name_messages">Messages</string>
+    <string name="generic_app_name_photos">Photos</string>
+    <string name="generic_app_name_browser">Browser</string>
+    <string name="generic_app_name_notes">Notes</string>
+    <string name="generic_app_name_settings">Settings</string>
 </resources>
