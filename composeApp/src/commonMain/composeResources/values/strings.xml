@@ -5,4 +5,8 @@
     <string name="generic_app_name_browser">Browser</string>
     <string name="generic_app_name_notes">Notes</string>
     <string name="generic_app_name_settings">Settings</string>
+    <string name="screen_shot_of_android">"Screen shot of Android"</string>
+    <string name="onboarding_get_started_subtitle">Less Phone, More Life</string>
+    <string name="onboarding_get_started_title">Bubble Phone</string>
+    <string name="onboarding_get_started">Get started</string>
 </resources>
