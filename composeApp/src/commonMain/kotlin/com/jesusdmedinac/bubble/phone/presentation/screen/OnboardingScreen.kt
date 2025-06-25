@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -153,6 +155,7 @@ private fun PickEssentialAppsScreen(
 ) {
     val state by onboardingViewModel.state.collectAsState()
     val searchTerm = state.searchTerm
+    val installedApps = state.installedApps
     Scaffold {
         Column(
             modifier = Modifier.fillMaxSize().padding(8.dp),
@@ -184,6 +187,23 @@ private fun PickEssentialAppsScreen(
                     Text(text = stringResource(Res.string.onboarding_pick_essential_apps_search_placeholder))
                 }
             )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(8.dp),
+                horizontalAlignment = Alignment.Start,
+            ) {
+                items(installedApps) { appName ->
+                    Text(
+                        text = appName,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
         }
     }
 }

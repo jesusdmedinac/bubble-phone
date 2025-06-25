@@ -3,8 +3,10 @@ package com.jesusdmedinac.bubble.phone
 import androidx.compose.runtime.Composable
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.jesusdmedinac.bubble.phone.data.framework.GetAppsInstalledOnPlatform
 import com.jesusdmedinac.bubble.phone.data.repository.OnboardingRepositoryImpl
 import com.jesusdmedinac.bubble.phone.data.store.BubblePhoneDataStore
+import com.jesusdmedinac.bubble.phone.data.store.BubblePhoneDataStoreImpl
 import com.jesusdmedinac.bubble.phone.domain.repository.OnboardingRepository
 import com.jesusdmedinac.bubble.phone.presentation.viewmodel.OnboardingViewModel
 import org.koin.compose.KoinApplication
@@ -36,8 +38,13 @@ private fun KoinApplication.koinAppModules() {
 }
 
 private fun koinDataModule() = module {
-    single { BubblePhoneDataStore(get<DataStore<Preferences>>()) }
-    single<OnboardingRepository> { OnboardingRepositoryImpl(get<BubblePhoneDataStore>()) }
+    single<BubblePhoneDataStore> { BubblePhoneDataStoreImpl(get<DataStore<Preferences>>()) }
+    single<OnboardingRepository> {
+        OnboardingRepositoryImpl(
+            get<BubblePhoneDataStore>(),
+            get<GetAppsInstalledOnPlatform>(),
+        )
+    }
 }
 
 private fun koinViewModelModule() = module {

@@ -27,8 +27,15 @@ class OnboardingViewModel(
         }
     }
 
-    private fun advanceToNextStep() {
+    private suspend fun advanceToNextStep() {
         _state.update { state -> state.copy(currentStep = state.currentStep?.nextStep) }
+        when (state.value.currentStep) {
+            OnboardingStep.PickEssentialApps -> {
+                val installedApps = onboardingRepository.getInstalledApps()
+                _state.update { state -> state.copy(installedApps = installedApps) }
+            }
+            else -> {}
+        }
     }
 
     fun onSearchTermChange(searchTerm: String) {
@@ -39,7 +46,8 @@ class OnboardingViewModel(
 data class OnboardingState(
     val loading: Boolean = false,
     val currentStep: OnboardingStep? = OnboardingStep.Welcome,
-    val searchTerm: String = ""
+    val searchTerm: String = "",
+    val installedApps: List<String> = emptyList(),
 )
 
 @Serializable
