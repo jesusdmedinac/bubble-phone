@@ -3,6 +3,7 @@ package com.jesusdmedinac.bubble.phone.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jesusdmedinac.bubble.phone.domain.repository.OnboardingRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -27,19 +28,22 @@ class OnboardingViewModel(
         }
     }
 
-    private suspend fun advanceToNextStep() {
+    private fun advanceToNextStep() {
         _state.update { state -> state.copy(currentStep = state.currentStep?.nextStep) }
-        when (state.value.currentStep) {
-            OnboardingStep.PickEssentialApps -> {
-                val installedApps = onboardingRepository.getInstalledApps()
-                _state.update { state -> state.copy(installedApps = installedApps) }
-            }
-            else -> {}
-        }
     }
 
     fun onSearchTermChange(searchTerm: String) {
         _state.update { state -> state.copy(searchTerm = searchTerm) }
+    }
+
+    fun onImReadyClick() {
+        viewModelScope.launch {
+            _state.update { state -> state.copy(loading = true) }
+            _sideEffect.value = OnboardingSideEffect.FinishOnboarding
+            delay(100)
+            _sideEffect.value = OnboardingSideEffect.Idle
+            _state.update { state -> state.copy(loading = false) }
+        }
     }
 }
 
@@ -47,7 +51,6 @@ data class OnboardingState(
     val loading: Boolean = false,
     val currentStep: OnboardingStep? = OnboardingStep.Welcome,
     val searchTerm: String = "",
-    val installedApps: List<String> = emptyList(),
 )
 
 @Serializable
@@ -61,6 +64,7 @@ sealed class OnboardingStep(
     @Serializable
     data object PickEssentialApps : OnboardingStep(nextStep = Paywall)
 
+    // TODO: Next steps are not implemented yet
     @Serializable
     data object Paywall : OnboardingStep(nextStep = AddTheWidget)
 
@@ -88,4 +92,5 @@ sealed class OnboardingStep(
 
 sealed interface OnboardingSideEffect {
     data object Idle : OnboardingSideEffect
+    data object FinishOnboarding : OnboardingSideEffect
 }

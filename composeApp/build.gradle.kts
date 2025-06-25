@@ -61,6 +61,17 @@ kotlin {
 
             implementation(libs.androidx.datastore)
             implementation(libs.androidx.datastore.preferences)
+
+            implementation(libs.composeIcons.cssGg)
+            implementation(libs.composeIcons.weatherIcons)
+            implementation(libs.composeIcons.evaIcons)
+            implementation(libs.composeIcons.feather)
+            implementation(libs.composeIcons.fontAwesome)
+            implementation(libs.composeIcons.lineAwesome)
+            implementation(libs.composeIcons.linea)
+            implementation(libs.composeIcons.octicons)
+            implementation(libs.composeIcons.simpleIcons)
+            implementation(libs.composeIcons.tablerIcons)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

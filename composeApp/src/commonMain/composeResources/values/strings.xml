@@ -12,4 +12,5 @@
     <string name="onboarding_pick_essential_apps_title">Pick Essential Apps</string>
     <string name="onboarding_pick_essential_apps_description">Let's start with these apps. You can change the later.</string>
     <string name="onboarding_pick_essential_apps_search_placeholder">Search for apps</string>
+    <string name="onboarding_pick_essential_apps_im_ready">I'm ready</string>
 </resources>

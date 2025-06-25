@@ -72,6 +72,10 @@ fun NavGraphBuilder.homeScreen(navController: NavHostController) {
 
 fun NavGraphBuilder.onboardingScreen(navController: NavHostController) {
     composable<Onboarding> {
-        OnboardingScreen()
+        OnboardingScreen(
+            onFinish = {
+                navController.navigate(Home)
+            }
+        )
     }
 }

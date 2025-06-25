@@ -51,7 +51,7 @@ fun HomeScreen() {
     }
 }
 
-private fun SystemApp.toAppAvailable(): AppAvailable {
+fun SystemApp.toAppAvailable(): AppAvailable {
     val labelRes = when (this) {
         SystemApp.MESSAGES -> Res.string.generic_app_name_messages
         SystemApp.PHOTOS -> Res.string.generic_app_name_photos

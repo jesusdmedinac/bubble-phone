@@ -2,8 +2,6 @@ package com.jesusdmedinac.bubble.phone.presentation.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -16,15 +14,15 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,42 +33,53 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import bubblephone.composeapp.generated.resources.Res
 import bubblephone.composeapp.generated.resources.onboarding_get_started
 import bubblephone.composeapp.generated.resources.onboarding_get_started_subtitle
 import bubblephone.composeapp.generated.resources.onboarding_get_started_title
+import bubblephone.composeapp.generated.resources.onboarding_pick_essential_apps_description
+import bubblephone.composeapp.generated.resources.onboarding_pick_essential_apps_im_ready
+import bubblephone.composeapp.generated.resources.onboarding_pick_essential_apps_search_placeholder
+import bubblephone.composeapp.generated.resources.onboarding_pick_essential_apps_title
 import bubblephone.composeapp.generated.resources.screen_shot_of_android
 import bubblephone.composeapp.generated.resources.ss_android_es
+import bubblephone.composeapp.generated.resources.ss_ios_es
+import com.jesusdmedinac.bubble.phone.Platform
+import com.jesusdmedinac.bubble.phone.SystemApp
+import com.jesusdmedinac.bubble.phone.getPlatform
+import com.jesusdmedinac.bubble.phone.presentation.viewmodel.OnboardingSideEffect
+import com.jesusdmedinac.bubble.phone.presentation.viewmodel.OnboardingStep
 import com.jesusdmedinac.bubble.phone.presentation.viewmodel.OnboardingViewModel
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import bubblephone.composeapp.generated.resources.onboarding_pick_essential_apps_description
-import bubblephone.composeapp.generated.resources.onboarding_pick_essential_apps_search_placeholder
-import bubblephone.composeapp.generated.resources.onboarding_pick_essential_apps_title
-import bubblephone.composeapp.generated.resources.ss_ios_es
-import com.jesusdmedinac.bubble.phone.Platform
-import com.jesusdmedinac.bubble.phone.getPlatform
-import com.jesusdmedinac.bubble.phone.presentation.viewmodel.OnboardingStep
 
 @Composable
-fun OnboardingScreen() {
+fun OnboardingScreen(
+    onFinish: () -> Unit
+) {
     val viewModel: OnboardingViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
+    val sideEffects by viewModel.sideEffect.collectAsState()
+
     val navController = rememberNavController()
 
     LaunchedEffect(state) {
         state.currentStep?.let { navController.navigate(it) }
+    }
+
+    LaunchedEffect(sideEffects) {
+        when (sideEffects) {
+            is OnboardingSideEffect.FinishOnboarding -> {
+                onFinish()
+            }
+            else -> {}
+        }
     }
 
     Column(
@@ -125,12 +134,11 @@ private fun WelcomeScreen(
                         brush = Brush.verticalGradient(
                             colorStops = arrayOf(
                                 0.0f to Color.Black,
-                                0.8f to Color.Black,
                                 1f to Color.White,
                             )
                         )
                     )
-                    .padding(2.dp)
+                    .padding(5.dp)
             )
             Text(
                 text = stringResource(Res.string.onboarding_get_started_subtitle),
@@ -174,7 +182,6 @@ private fun PickEssentialAppsScreen(
 ) {
     val state by onboardingViewModel.state.collectAsState()
     val searchTerm = state.searchTerm
-    val installedApps = state.installedApps
     Scaffold {
         Column(
             modifier = Modifier.fillMaxSize().padding(8.dp),
@@ -194,18 +201,21 @@ private fun PickEssentialAppsScreen(
                     .padding(8.dp),
                 style = MaterialTheme.typography.bodyLarge,
             )
-            OutlinedTextField(
-                value = searchTerm,
-                onValueChange = { searchTermValue ->
-                    onboardingViewModel.onSearchTermChange(searchTermValue)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                placeholder = {
-                    Text(text = stringResource(Res.string.onboarding_pick_essential_apps_search_placeholder))
-                }
-            )
+            // TODO: Limited until more apps are added
+            if (false) {
+                OutlinedTextField(
+                    value = searchTerm,
+                    onValueChange = { searchTermValue ->
+                        onboardingViewModel.onSearchTermChange(searchTermValue)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    placeholder = {
+                        Text(text = stringResource(Res.string.onboarding_pick_essential_apps_search_placeholder))
+                    }
+                )
+            }
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,15 +223,63 @@ private fun PickEssentialAppsScreen(
                     .padding(8.dp),
                 horizontalAlignment = Alignment.Start,
             ) {
-                items(installedApps) { appName ->
-                    Text(
-                        text = appName,
+                itemsIndexed(
+                    SystemApp
+                        .entries
+                        .map { systemApp -> systemApp.toAppAvailable() }
+                ) { index, appAvailable ->
+                    ListItem(
+                        headlineContent = {
+                            Text(
+                                text = stringResource(appAvailable.labelRes),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        style = MaterialTheme.typography.bodyLarge,
+                            .then(
+                                when (index) {
+                                    0 -> {
+                                        Modifier.clip(RoundedCornerShape(
+                                            topStart = MaterialTheme.shapes.medium.topStart,
+                                            topEnd = MaterialTheme.shapes.medium.topEnd,
+                                            bottomStart = CornerSize(0.dp),
+                                            bottomEnd = CornerSize(0.dp)
+                                        ))
+                                    }
+                                    SystemApp.entries.size - 1 -> {
+                                        Modifier.clip(RoundedCornerShape(
+                                            topStart = CornerSize(0.dp),
+                                            topEnd = CornerSize(0.dp),
+                                            bottomEnd = MaterialTheme.shapes.medium.bottomEnd,
+                                            bottomStart = MaterialTheme.shapes.medium.bottomStart
+                                        ))
+                                    }
+                                    else -> {
+                                        Modifier
+                                    }
+                                }
+                            )
                     )
                 }
+            }
+
+            Button(
+                onClick = {
+                    onboardingViewModel.onImReadyClick()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 64.dp, vertical = 20.dp)
+                    .height(136.dp),
+                shape = MaterialTheme.shapes.extraLarge,
+            ) {
+                Text(
+                    text = stringResource(Res.string.onboarding_pick_essential_apps_im_ready),
+                    style = MaterialTheme.typography.headlineLarge
+                )
             }
         }
     }
