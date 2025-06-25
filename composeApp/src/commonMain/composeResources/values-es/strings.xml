@@ -9,4 +9,7 @@
     <string name="onboarding_get_started_subtitle">Menos Teléfono, Más vida</string>
     <string name="onboarding_get_started_title">Bubble Phone</string>
     <string name="onboarding_get_started">Comenzar</string>
+    <string name="onboarding_pick_essential_apps_title">Elige las aplicaciones esenciales</string>
+    <string name="onboarding_pick_essential_apps_description">Comencemos con estas aplicaciones. Puedes cambiarlas más tarde.</string>
+    <string name="onboarding_pick_essential_apps_search_placeholder">Buscar aplicaciones</string>
 </resources>
