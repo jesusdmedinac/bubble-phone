@@ -1,7 +1,8 @@
 package com.jesusdmedinac.bubble.phone
 
-interface Platform {
-    val name: String
+sealed class Platform {
+    data object Android : Platform()
+    data object iOS : Platform()
 }
 
 expect fun getPlatform(): Platform
