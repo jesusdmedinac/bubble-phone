@@ -5,4 +5,12 @@
     <string name="generic_app_name_browser">Browser</string>
     <string name="generic_app_name_notes">Notes</string>
     <string name="generic_app_name_settings">Settings</string>
+    <string name="screen_shot_of_android">"Screen shot of Android"</string>
+    <string name="onboarding_get_started_subtitle">Less Phone, More Life</string>
+    <string name="onboarding_get_started_title">Bubble Phone</string>
+    <string name="onboarding_get_started">Get started</string>
+    <string name="onboarding_pick_essential_apps_title">Pick Essential Apps</string>
+    <string name="onboarding_pick_essential_apps_description">Let's start with these apps. You can change the later.</string>
+    <string name="onboarding_pick_essential_apps_search_placeholder">Search for apps</string>
+    <string name="onboarding_pick_essential_apps_im_ready">I'm ready</string>
 </resources>

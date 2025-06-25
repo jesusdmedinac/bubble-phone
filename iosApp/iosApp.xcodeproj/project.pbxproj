@@ -18,6 +18,13 @@
 			);
 			target = B9DA97B02DC1472C00A4DA20 /* iosApp */;
 		};
+		D9F67A072E0BE1EC0045CCDC /* Exceptions for "commonMain" folder in "iosApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				composeResources/values/strings.xml,
+			);
+			target = B9DA97B02DC1472C00A4DA20 /* iosApp */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -36,6 +43,9 @@
 		};
 		D9DBDDCE2E05C39F00BD8C70 /* commonMain */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D9F67A072E0BE1EC0045CCDC /* Exceptions for "commonMain" folder in "iosApp" target */,
+			);
 			name = commonMain;
 			path = ../composeApp/src/commonMain;
 			sourceTree = SOURCE_ROOT;
@@ -370,6 +380,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 }
@@ -47,11 +48,30 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodel)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.jetbrains.lifecycle.viewmodel.compose)
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.koin.compose.viewmodel.navigation)
+
+            implementation(libs.navigation.compose)
+
+            implementation(libs.kotlinx.serialization)
+
+            implementation(libs.androidx.datastore)
+            implementation(libs.androidx.datastore.preferences)
+
+            implementation(libs.composeIcons.cssGg)
+            implementation(libs.composeIcons.weatherIcons)
+            implementation(libs.composeIcons.evaIcons)
+            implementation(libs.composeIcons.feather)
+            implementation(libs.composeIcons.fontAwesome)
+            implementation(libs.composeIcons.lineAwesome)
+            implementation(libs.composeIcons.linea)
+            implementation(libs.composeIcons.octicons)
+            implementation(libs.composeIcons.simpleIcons)
+            implementation(libs.composeIcons.tablerIcons)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -5,4 +5,12 @@
     <string name="generic_app_name_browser">Navegador</string>
     <string name="generic_app_name_notes">Notas</string>
     <string name="generic_app_name_settings">Configuración</string>
+    <string name="screen_shot_of_android">"Captura de pantalla de Android"</string>
+    <string name="onboarding_get_started_subtitle">Menos Teléfono, Más vida</string>
+    <string name="onboarding_get_started_title">Bubble Phone</string>
+    <string name="onboarding_get_started">Comenzar</string>
+    <string name="onboarding_pick_essential_apps_title">Elige las aplicaciones esenciales</string>
+    <string name="onboarding_pick_essential_apps_description">Comencemos con estas aplicaciones. Puedes cambiarlas más tarde.</string>
+    <string name="onboarding_pick_essential_apps_search_placeholder">Buscar aplicaciones</string>
+    <string name="onboarding_pick_essential_apps_im_ready">Estoy listo</string>
 </resources>
