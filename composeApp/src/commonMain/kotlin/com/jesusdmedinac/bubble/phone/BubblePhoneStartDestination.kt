@@ -20,11 +20,10 @@ fun BubblePhoneStartDestination(
     val bubblePhoneDataStoreImpl = koinInject<BubblePhoneDataStore>()
 
     // TODO: Set as true to show onboarding during development. Remove before production.
-    var isFirstTime: Boolean? by remember { mutableStateOf(true) }
+    var isFirstTime: Boolean? by remember { mutableStateOf(null) }
 
     val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
-        return@LaunchedEffect
         coroutineScope.launch {
             isFirstTime = bubblePhoneDataStoreImpl.isFirstTime()
 

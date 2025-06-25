@@ -43,7 +43,7 @@ fun HomeScreen() {
                 ) {
                     Text(
                         text = stringResource(appAvailable.labelRes),
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.headlineLarge
                     )
                 }
             }

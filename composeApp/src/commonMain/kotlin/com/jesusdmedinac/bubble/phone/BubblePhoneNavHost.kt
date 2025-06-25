@@ -48,7 +48,7 @@ fun BubblePhoneNavHost() {
             )
             NavHost(
                 navController = navController,
-                startDestination = Onboarding,
+                startDestination = startDestination,
                 modifier = Modifier.weight(1f)
             ) {
                 homeScreen(navController)
