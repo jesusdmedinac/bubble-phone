@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.core.net.toUri
 
 class AndroidOpenSystemApp(
     private val context: Context
@@ -14,9 +15,10 @@ class AndroidOpenSystemApp(
                 addCategory(Intent.CATEGORY_APP_MESSAGING)
             }
             SystemApp.PHOTOS -> Intent(Intent.ACTION_VIEW).apply {
-                addCategory(Intent.CATEGORY_APP_GALLERY)
+                action = Intent.ACTION_VIEW
+                type = "image/*"
             }
-            SystemApp.BROWSER -> Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com"))
+            SystemApp.BROWSER -> Intent(Intent.ACTION_VIEW, "https://www.google.com".toUri())
             SystemApp.SETTINGS -> Intent(Settings.ACTION_SETTINGS)
         }
 
