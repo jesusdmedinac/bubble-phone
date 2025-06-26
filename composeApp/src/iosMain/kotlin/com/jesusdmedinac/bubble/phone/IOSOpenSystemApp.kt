@@ -12,18 +12,16 @@ class IOSOpenSystemApp : OpenSystemApp {
             SystemApp.MESSAGES -> "sms:"
             SystemApp.BROWSER -> "https://www.google.com"
             SystemApp.SETTINGS -> UIApplicationOpenSettingsURLString
-            SystemApp.PHOTOS -> "photos-redirect://" // Esquema para abrir la aplicación de Fotos
+            SystemApp.PHOTOS -> "photos-redirect://"
         }
 
         val url = NSURL(string = scheme)
         if (UIApplication.sharedApplication.canOpenURL(url)) {
-            // Asegurarse de que se ejecuta en el hilo principal
             dispatch_async(dispatch_get_main_queue()) {
                 val options = mapOf<Any?, Any?>()
                 UIApplication.sharedApplication.openURL(url, options) { success ->
                     if (!success) {
                         println("No se pudo abrir la aplicación de mensajes. URL: $url")
-                        // Intentar con un formato alternativo
                         val fallbackUrl = NSURL(string = "sms:0")
                         UIApplication.sharedApplication.openURL(
                             fallbackUrl,
